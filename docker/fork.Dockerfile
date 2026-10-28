@@ -39,7 +39,7 @@ FROM base
 COPY --from=vendor /usr/bin/composer /usr/bin/composer
 COPY --from=vendor /app/vendor vendor
 COPY . .
-COPY --from=assets /app/public/build public/build
+COPY --from=assets /app/public/static public/static
 COPY Caddyfile /etc/frankenphp/Caddyfile
 COPY docker/fork-entrypoint.sh /usr/local/bin/fork-entrypoint
 
