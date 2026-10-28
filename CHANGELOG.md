@@ -21,6 +21,7 @@ Changelog
 * API: payment responses now contain only the payment's own fields, with its method as `{gatewayName, name}`, and `GET /api/payment-methods` lists the company's payment methods
 * New companies get Cheque and Card terminal payment methods, and existing companies get them on upgrade
 * Creating a company now asks for its country, with a searchable list that shows each country's flag. Companies in the EU, the UK, Switzerland, Monaco, the Isle of Man, South Africa and Australia start with their country's VAT or GST rates already set up
+* Expenses: record what the business spends, with the date, vendor, category, amount and the tax included in it, the payment method, and the receipts (PDF or image, kept in the database). An expense can be linked to the client it was incurred for and the invoice it was re-billed on. Vendors and expense categories have their own lists, the dashboard shows revenue against expenses for the last 12 months, the REST API exposes `/api/expenses`, `/api/vendors`, `/api/expense-categories` and `POST /api/expenses/{id}/attachments` (base64 content), and MCP clients get `list_expenses`, `get_expense`, `summarize_expenses`, `create_expense`, `update_expense`, `delete_expense`, `add_expense_attachment`, `list_vendors` and `list_expense_categories`
 * AI agents can discover SolidInvoice on their own: the app now serves `/auth.md` with sign-in steps for agents, an agent skill for connecting over MCP, and an `/.well-known/ai-catalog.json` listing the MCP server and REST API
 
 ### Fixes
