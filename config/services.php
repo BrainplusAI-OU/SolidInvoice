@@ -39,6 +39,8 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $parameters->set('env(SOLIDINVOICE_APPLICATION_URL)', '');
     $parameters->set('env(SOLIDINVOICE_CUSTOM_DOMAIN_DNS_RECORD)', '');
     $parameters->set('env(SOLIDINVOICE_LOCK_DSN)', 'flock');
+    $parameters->set('env(SOLIDINVOICE_BRAND_NAME)', '');
+    $parameters->set('env(SOLIDINVOICE_BRAND_LOGO)', '');
     $parameters->set('env(SOLIDINVOICE_RUNTIME)', null);
     $parameters->set('env(SOLIDINVOICE_ALLOW_REGISTRATION)', false);
     $parameters->set('env(SOLIDINVOICE_OAUTH_CLIENT_GOOGLE_CLIENT_ID)', null);
