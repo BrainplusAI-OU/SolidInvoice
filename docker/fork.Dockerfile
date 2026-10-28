@@ -49,6 +49,9 @@ RUN composer dump-autoload --no-dev --classmap-authoritative \
     && php bin/console assets:install public --no-interaction
 
 EXPOSE 8765
+
+# The base image probes the Caddy admin API, which the Caddyfile turns off.
+HEALTHCHECK --start-period=60s CMD curl -fsS http://127.0.0.1:8765/health || exit 1
 VOLUME ["/etc/solidinvoice"]
 
 ENTRYPOINT ["fork-entrypoint"]
