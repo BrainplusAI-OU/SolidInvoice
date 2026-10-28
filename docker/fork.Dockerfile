@@ -26,7 +26,7 @@ RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist --no-pr
 FROM oven/bun:1.3.14 AS assets
 
 WORKDIR /app
-COPY package.json bun.lock tsconfig.json webpack.config.js ./
+COPY package.json bun.lock tsconfig.json webpack.config.js eslint.config.mjs ./
 COPY --from=vendor /app/vendor vendor
 RUN bun install --frozen-lockfile
 COPY assets assets
