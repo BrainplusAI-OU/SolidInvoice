@@ -29,3 +29,9 @@
         <h1 class="h3 mb-0">{{ app_name }}</h1>
     </div>
 {% endblock brand %}
+
+{% block footer_copyright %}
+    <li class="list-inline-item">
+        &copy; {{ 'now'|date('Y') }} {{ app_name }}
+    </li>
+{% endblock footer_copyright %}

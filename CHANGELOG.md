@@ -6,6 +6,7 @@ Changelog
 
 ### Changes
 
+* White label: `SOLIDINVOICE_BRAND_NAME` and `SOLIDINVOICE_BRAND_LOGO` (path to an image file) replace the SolidInvoice name and logo across the app, public documents, PDFs and emails, and hide every "Powered by SolidInvoice" mention
 * API: clients, contacts, invoices, quotes, recurring invoices and payments include their `created` and `updated` times (UTC), and can be sorted by them (`order[updated]=desc`) and filtered to what changed since a time (`updated[after]=...`); invoices, quotes and recurring invoices include their `currencyCode`; invoices and quotes can be searched by number (`invoiceId`, `quoteId`) and client name (`client.name`); `itemsPerPage` sets the page size, up to 100
 * API: invoices and quotes created without a number are numbered the same way as in the app, numbers must be unique within a company, `GET /api/next-number` previews the next number, and `POST /api/invoices/{id}/clone` and `POST /api/quotes/{id}/clone` copy a document into a new draft
 * API: `POST /api/invoices/{id}/send` and `POST /api/quotes/{id}/send` email a document, with optional recipients, Cc, subject, personal note, PDF attachment and a copy to yourself, and re-send it while it is pending; `POST /api/invoices/{id}/reminder` sends a payment reminder (at most one an hour), and `POST /api/invoices/{id}/mark-sent` marks an invoice sent without emailing it
