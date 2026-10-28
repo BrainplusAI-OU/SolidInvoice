@@ -1,2 +1,7 @@
 /frankenphp/dist
 .idea/
+/vendor/
+/node_modules/
+/var/
+/public/build/
+/public/bundles/
