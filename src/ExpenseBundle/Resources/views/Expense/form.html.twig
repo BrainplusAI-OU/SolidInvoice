@@ -1,0 +1,182 @@
+{#
+ # This file is part of SolidInvoice package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{% extends "@SolidInvoiceCore/Layout/default.html.twig" %}
+
+{% block content %}
+<div class="form-page">
+    {{ form_start(form) }}
+    {{ form_errors(form) }}
+
+    <div class="form-page-container form-page-container--narrow">
+        <div class="form-page-header">
+            <div class="form-page-header-content">
+                <div class="form-page-icon">
+                    {{ ux_icon('tabler:receipt-2', {width: 28, height: 28}) }}
+                </div>
+                <div>
+                    {% if expense.id is not empty %}
+                        <h1 class="form-page-title">{{ 'expense.edit'|trans }}</h1>
+                    {% else %}
+                        <h1 class="form-page-title">{{ 'expense.add'|trans }}</h1>
+                        <p class="form-page-subtitle">{{ 'expense.form.subtitle'|trans }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="form-page-sections">
+            <section class="form-page-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        {{ ux_icon('tabler:receipt-2', {width: 20, height: 20}) }}
+                    </div>
+                    <div class="section-header-text">
+                        <h2 class="section-title">{{ 'expense.details'|trans }}</h2>
+                    </div>
+                </div>
+
+                <div class="section-content">
+                    <div class="form-grid">
+                        <div class="form-field">
+                            {{ form_row(form.date) }}
+                        </div>
+                        <div class="form-field">
+                            {{ form_row(form.reference) }}
+                        </div>
+                        <div class="form-field form-field-wide">
+                            {{ form_row(form.description) }}
+                        </div>
+                        <div class="form-field">
+                            {{ form_row(form.vendor) }}
+                        </div>
+                        <div class="form-field">
+                            {{ form_row(form.category) }}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="form-page-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        {{ ux_icon('tabler:cash', {width: 20, height: 20}) }}
+                    </div>
+                    <div class="section-header-text">
+                        <h2 class="section-title">{{ 'expense.amounts'|trans }}</h2>
+                    </div>
+                </div>
+
+                <div class="section-content">
+                    <div class="form-grid">
+                        <div class="form-field">
+                            {{ form_row(form.currencyCode) }}
+                        </div>
+                        <div class="form-field">
+                            {{ form_row(form.paymentMethod) }}
+                        </div>
+                        <div class="form-field">
+                            {{ form_row(form.amount) }}
+                        </div>
+                        <div class="form-field">
+                            {{ form_row(form.taxAmount) }}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="form-page-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        {{ ux_icon('tabler:file-invoice', {width: 20, height: 20}) }}
+                    </div>
+                    <div class="section-header-text">
+                        <h2 class="section-title">{{ 'expense.rebilling'|trans }}</h2>
+                        <p class="section-description">{{ 'expense.rebilling_help'|trans }}</p>
+                    </div>
+                </div>
+
+                <div class="section-content">
+                    <div class="form-grid">
+                        <div class="form-field">
+                            {{ form_row(form.client) }}
+                        </div>
+                        <div class="form-field">
+                            {{ form_row(form.invoice) }}
+                        </div>
+                        <div class="form-field form-field-wide">
+                            {{ form_row(form.billable) }}
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="form-page-section">
+                <div class="section-header">
+                    <div class="section-icon">
+                        {{ ux_icon('tabler:file-text', {width: 20, height: 20}) }}
+                    </div>
+                    <div class="section-header-text">
+                        <h2 class="section-title">{{ 'expense.receipts'|trans }}</h2>
+                    </div>
+                </div>
+
+                <div class="section-content">
+                    {% if expense.attachments is not empty %}
+                        <ul class="list-unstyled mb-3">
+                            {% for attachment in expense.attachments %}
+                                <li class="d-flex align-items-center gap-2 mb-2">
+                                    {{ ux_icon('tabler:file-text', {width: 18, height: 18}) }}
+                                    <a href="{{ path('_expenses_attachment', {id: attachment.id}) }}" target="_blank" rel="noopener">{{ attachment.fileName }}</a>
+                                    <span class="text-muted small">{{ 'expense.attachment.size'|trans({'%size%': (attachment.size / 1024)|round(0, 'ceil')}) }}</span>
+                                    <button type="submit" class="btn btn-ghost btn-sm text-danger" form="delete-attachment-{{ attachment.id }}" title="{{ 'action.delete'|trans }}" aria-label="{{ 'action.delete'|trans }}">
+                                        {{ ux_icon('tabler:trash', {width: 16, height: 16}) }}
+                                    </button>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                    <div class="form-grid">
+                        <div class="form-field form-field-wide">
+                            {{ form_row(form.receipts) }}
+                        </div>
+                        <div class="form-field form-field-wide">
+                            {{ form_row(form.notes) }}
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        {{ form_rest(form) }}
+
+        <div class="form-page-actions">
+            <div class="form-page-actions-inner">
+                <a href="{{ path('_expenses_index') }}" class="btn btn-ghost">
+                    {{ ux_icon('tabler:arrow-left', {width: 18, height: 18}) }}
+                    {{ 'action.cancel'|trans }}
+                </a>
+                <button type="submit" class="btn btn-primary btn-save">
+                    {{ ux_icon('tabler:device-floppy', {width: 18, height: 18}) }}
+                    {{ 'action.save'|trans }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{ form_end(form) }}
+
+    {# Outside the expense form: HTML forms do not nest. The buttons above reach them through form="…". #}
+    {% for attachment in expense.attachments %}
+        <form id="delete-attachment-{{ attachment.id }}" method="post" action="{{ path('_expenses_attachment_delete', {id: attachment.id}) }}" class="d-none">
+            <input type="hidden" name="_token" value="{{ csrf_token('expense_attachment_delete_' ~ attachment.id) }}">
+        </form>
+    {% endfor %}
+</div>
+{% endblock %}

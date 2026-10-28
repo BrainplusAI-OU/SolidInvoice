@@ -1,0 +1,52 @@
+name: Fork image
+
+# Builds docker/fork.Dockerfile and pushes it to the GitHub Container Registry, for the
+# BrainplusAI fork's own test deployments. It does nothing on any other repository.
+
+on:
+  push:
+    branches:
+      - '3.2.x'
+      - 'feature/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: fork-image-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  image:
+    if: github.repository_owner == 'BrainplusAI-OU'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v6.0.3
+
+      - uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
+
+      - uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Tags
+        id: tags
+        run: |
+          IMAGE="ghcr.io/$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')"
+          BRANCH="$(echo '${{ github.ref_name }}' | tr -c 'a-zA-Z0-9._-' '-' | sed 's/-*$//')"
+          echo "tags=${IMAGE}:${BRANCH},${IMAGE}:sha-${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/fork.Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
+          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

@@ -21,6 +21,10 @@ use Money\Money;
 use SolidInvoice\ClientBundle\Entity\Client;
 use SolidInvoice\ClientBundle\Entity\Contact;
 use SolidInvoice\CoreBundle\Entity\LineInterface;
+use SolidInvoice\ExpenseBundle\Entity\Expense;
+use SolidInvoice\ExpenseBundle\Entity\ExpenseAttachment;
+use SolidInvoice\ExpenseBundle\Entity\ExpenseCategory;
+use SolidInvoice\ExpenseBundle\Entity\Vendor;
 use SolidInvoice\InvoiceBundle\Entity\Invoice;
 use SolidInvoice\InvoiceBundle\Entity\RecurringInvoice;
 use SolidInvoice\PaymentBundle\Entity\Payment;
@@ -51,6 +55,9 @@ final class EntityNormalizer
             $entity instanceof Payment => $this->payment($entity),
             $entity instanceof PaymentMethod => $this->paymentMethod($entity),
             $entity instanceof Tax => $this->tax($entity),
+            $entity instanceof Expense => $this->expense($entity),
+            $entity instanceof Vendor => $this->vendor($entity),
+            $entity instanceof ExpenseCategory => $this->expenseCategory($entity),
             $entity instanceof TaxIdentifier => $this->taxIdentifier($entity),
             default => throw new ToolCallException(sprintf(
                 'Unsupported entity type "%s". Add a dedicated serializer before exposing it via MCP.',
@@ -356,6 +363,64 @@ final class EntityNormalizer
             'type' => $tax->getType(),
             'category' => $tax->getCategory()->value,
             'compound' => $tax->isCompound(),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function expense(Expense $expense): array
+    {
+        return [
+            'id' => $expense->getId()?->toRfc4122(),
+            'date' => $expense->getDate()->format('Y-m-d'),
+            'description' => $expense->getDescription(),
+            'vendor' => $expense->getVendor() instanceof Vendor ? $this->vendor($expense->getVendor()) : null,
+            'category' => $expense->getCategory() instanceof ExpenseCategory ? $this->expenseCategory($expense->getCategory()) : null,
+            'currency' => $expense->getCurrencyCode(),
+            'amount' => $this->bigNumber($expense->getAmount()),
+            'tax_amount' => $this->bigNumber($expense->getTaxAmount()),
+            'net_amount' => $this->bigNumber($expense->getNetAmount()),
+            'payment_method' => $expense->getPaymentMethod(),
+            'reference' => $expense->getReference(),
+            'notes' => $expense->getNotes(),
+            'client' => $this->clientSummary($expense->getClient()),
+            'billable' => $expense->isBillable(),
+            'invoice_id' => $expense->getInvoice()?->getId()?->toRfc4122(),
+            'attachments' => array_values(array_map(
+                static fn (ExpenseAttachment $attachment): array => [
+                    'id' => $attachment->getId()?->toRfc4122(),
+                    'file_name' => $attachment->getFileName(),
+                    'mime_type' => $attachment->getMimeType(),
+                    'size' => $attachment->getSize(),
+                ],
+                $expense->getAttachments()->toArray(),
+            )),
+            'created' => $this->date($expense->getCreated()),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function vendor(Vendor $vendor): array
+    {
+        return [
+            'id' => $vendor->getId()?->toRfc4122(),
+            'name' => $vendor->getName(),
+            'email' => $vendor->getEmail(),
+            'tax_number' => $vendor->getTaxNumber(),
+        ];
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function expenseCategory(ExpenseCategory $category): array
+    {
+        return [
+            'id' => $category->getId()?->toRfc4122(),
+            'name' => $category->getName(),
         ];
     }
 

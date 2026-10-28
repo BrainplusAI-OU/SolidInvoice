@@ -437,6 +437,9 @@ datagrid:
         client:
             description: 'Add the people and companies you bill. Once a client exists, you can send them an invoice or quote in seconds.'
             title: 'No clients yet'
+        expense:
+            description: 'Record what your business spends, with the receipts, to see it next to what you earn.'
+            title: 'No expenses yet'
         invoice:
             description: 'Create your first invoice and send it in under a minute. Turn on online payments and clients can pay you straight from it.'
             title: 'No invoices yet'
@@ -519,6 +522,86 @@ exception:
     generic:
         text: 'An unexpected error occurred. Please try again.'
         title: 'Oops, something went wrong'
+expense:
+    add: 'Add Expense'
+    amounts: Amounts
+    attachment:
+        flash:
+            deleted: 'Receipt deleted.'
+        size: '%size% KB'
+    category:
+        add: 'Add Category'
+        details: 'Category Details'
+        edit: 'Edit Category'
+        flash:
+            saved: 'Category saved.'
+        grid:
+            delete_confirm: 'Delete the selected categories? Their expenses are kept, without a category.'
+        title: 'Expense Categories'
+    dashboard:
+        currency: Currency
+        expenses: '%currency% expenses'
+        net: Net
+        revenue: '%currency% revenue'
+        title: 'Revenue and Expenses'
+        total_expenses: Expenses
+        total_revenue: Revenue
+    details: 'Expense Details'
+    edit: 'Edit Expense'
+    flash:
+        saved: 'Expense saved.'
+    form:
+        amount: 'Amount Paid'
+        amount_help: 'The total paid, tax included.'
+        billable: 'Re-bill to the client'
+        billable_help: 'Mark the expense as something to put on the client''s next invoice.'
+        category: Category
+        category_placeholder: 'No category'
+        client_placeholder: 'No client'
+        currency: Currency
+        date: Date
+        invoice_placeholder: 'Not invoiced yet'
+        notes: Notes
+        payment_method: 'Payment Method'
+        receipts: 'Add Receipts'
+        receipts_help: 'PDF or image files, up to 10 MB each.'
+        reference: Reference
+        reference_help: 'The number on the vendor''s invoice or receipt.'
+        subtitle: 'Record money your business spent.'
+        tax_amount: 'Tax Included'
+        tax_amount_help: 'The part of the amount that is tax, such as VAT you can reclaim.'
+        vendor: Vendor
+        vendor_placeholder: 'No vendor'
+    grid:
+        amount: Amount
+        category: Category
+        date: Date
+        delete_confirm: 'Delete the selected expenses and their receipts?'
+        vendor: Vendor
+    menu:
+        categories: Categories
+        main: Expenses
+        vendors: Vendors
+    rebilling: Re-billing
+    rebilling_help: 'Link the expense to the client it was incurred for, and to the invoice it was billed on.'
+    receipts: Receipts
+    title: Expenses
+    vendor:
+        add: 'Add Vendor'
+        details: 'Vendor Details'
+        edit: 'Edit Vendor'
+        flash:
+            saved: 'Vendor saved.'
+        form:
+            address: Address
+            email: Email
+            notes: Notes
+            phone: Phone
+            tax_number: 'Tax Number'
+            website: Website
+        grid:
+            delete_confirm: 'Delete the selected vendors? Their expenses are kept, without a vendor.'
+        title: Vendors
 export:
     actions: Actions
     completed: Completed
