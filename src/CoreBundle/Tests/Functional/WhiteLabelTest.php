@@ -41,6 +41,7 @@ final class WhiteLabelTest extends WebTestCase
 
         self::assertResponseIsSuccessful();
         self::assertSelectorTextContains('body', 'SolidInvoice');
+        self::assertSelectorTextContains('title', 'SolidInvoice');
     }
 
     public function testTheLoginPageOfAWhiteLabelInstallationShowsTheBrand(): void
@@ -56,6 +57,7 @@ final class WhiteLabelTest extends WebTestCase
         self::assertSelectorTextNotContains('body', 'Powered by');
         self::assertSelectorTextNotContains('body', 'SolidInvoice');
         self::assertSelectorTextContains('title', self::BRAND);
+        self::assertSelectorTextNotContains('title', 'SolidInvoice');
     }
 
     private function setBrand(?string $name): void

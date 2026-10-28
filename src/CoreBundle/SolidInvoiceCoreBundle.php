@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace SolidInvoice\CoreBundle;
 
+use SolidInvoice\CoreBundle\DependencyInjection\Compiler\BrandNamePass;
 use SolidInvoice\CoreBundle\DependencyInjection\Compiler\SubscriberResolverPass;
 use SolidInvoice\CoreBundle\Search\ResultFormatterInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -31,6 +32,7 @@ final class SolidInvoiceCoreBundle extends Bundle
         parent::build($container);
 
         $container->addCompilerPass(new SubscriberResolverPass());
+        $container->addCompilerPass(new BrandNamePass());
 
         $container->registerForAutoconfiguration(ResultFormatterInterface::class)
             ->addTag('solidinvoice.search.result_formatter');
