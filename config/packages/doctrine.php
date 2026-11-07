@@ -17,7 +17,6 @@ use Doctrine\DBAL\Platforms\PostgreSQLPlatform;
 use SolidInvoice\CoreBundle\Doctrine\Filter\ArchivableFilter;
 use SolidInvoice\CoreBundle\Doctrine\Filter\CompanyEnabledFilter;
 use SolidInvoice\CoreBundle\Doctrine\Filter\CompanyFilter;
-use SolidInvoice\CoreBundle\Doctrine\Function\ToNumberFunction;
 use SolidInvoice\CoreBundle\Doctrine\Type\BigIntegerType;
 use SolidInvoice\CoreBundle\Doctrine\Type\QuantityType;
 
@@ -50,11 +49,6 @@ return App::config([
                     'validate_xml_mapping' => true,
                     'identity_generation_preferences' => [
                         PostgreSQLPlatform::class => 'identity',
-                    ],
-                    'dql' => [
-                        'string_functions' => [
-                            'to_number' => ToNumberFunction::class,
-                        ],
                     ],
                     'filters' => [
                         'company' => [
