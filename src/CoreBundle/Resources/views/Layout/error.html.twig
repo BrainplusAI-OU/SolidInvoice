@@ -45,9 +45,11 @@
                 </div>
             </div>
 
+            {% if not white_label() %}
             <div class="text-center text-muted mt-5">
                 <small>{{ 'layout.powered_by'|trans }} <a href="https://solidinvoice.co">{{ app_name }}</a>{% if app_version %} - {{ app_version }}{% endif %}</small>
             </div>
+            {% endif %}
 
         </div>
     </div>

@@ -16,6 +16,7 @@ namespace SolidInvoice\CoreBundle\Twig\Extension;
 use Carbon\Carbon;
 use DateTimeInterface;
 use Override;
+use SolidInvoice\CoreBundle\Branding\Brand;
 use SolidInvoice\CoreBundle\Company\CompanySelector;
 use SolidInvoice\CoreBundle\Company\ResolvedHost;
 use SolidInvoice\CoreBundle\Entity\Company;
@@ -52,6 +53,7 @@ class GlobalExtension extends AbstractExtension implements GlobalsInterface
         private readonly CompanySelector $companySelector,
         private readonly ?string $installed,
         private readonly ToggleInterface $toggler,
+        private readonly Brand $brand,
     ) {
     }
 
@@ -67,7 +69,7 @@ class GlobalExtension extends AbstractExtension implements GlobalsInterface
             // Hide the version in SaaS mode: hosted deployments often run dev builds,
             // and exposing "3.1.x-dev" in footers/emails looks unprofessional
             'app_version' => $this->toggler->isActive('saas_enabled') ? null : SolidInvoiceCoreBundle::VERSION,
-            'app_name' => SolidInvoiceCoreBundle::APP_NAME,
+            'app_name' => $this->brand->getName(),
         ];
     }
 
@@ -123,12 +125,14 @@ class GlobalExtension extends AbstractExtension implements GlobalsInterface
 
             new TwigFunction('app_logo', $this->displayAppLogo(...), ['is_safe' => ['html']]),
 
+            new TwigFunction('white_label', $this->brand->isWhiteLabel(...)),
+
             new TwigFunction('company_name', function (): string {
                 if ($this->companySelector->getCompany() instanceof Ulid) {
-                    return $this->systemConfig->get('system/company/company_name') ?? SolidInvoiceCoreBundle::APP_NAME;
+                    return $this->systemConfig->get('system/company/company_name') ?? $this->brand->getName();
                 }
 
-                return SolidInvoiceCoreBundle::APP_NAME;
+                return $this->brand->getName();
             }),
 
             new TwigFunction('company_id', $this->companySelector->getCompany(...)),
@@ -152,11 +156,12 @@ class GlobalExtension extends AbstractExtension implements GlobalsInterface
      */
     public function displayAppLogo(string $width = 'auto', ?Company $company = null, bool $showDefault = false, bool $showOnlyAppIcon = false): string
     {
-        $logo = $showDefault ? self::DEFAULT_LOGO : null;
+        $defaultLogo = $this->brand->getLogo() ?? self::DEFAULT_LOGO;
+        $logo = $showDefault ? $defaultLogo : null;
 
         if ($this->installed && ! $showOnlyAppIcon) {
-            $logo = $this->companySelector->getCompany() instanceof Ulid ? $this->systemConfig->get('system/company/logo', $company) : self::DEFAULT_LOGO;
-            $logo ??= $showDefault ? self::DEFAULT_LOGO : null;
+            $logo = $this->companySelector->getCompany() instanceof Ulid ? $this->systemConfig->get('system/company/logo', $company) : $defaultLogo;
+            $logo ??= $showDefault ? $defaultLogo : null;
         }
 
         if (null === $logo) {

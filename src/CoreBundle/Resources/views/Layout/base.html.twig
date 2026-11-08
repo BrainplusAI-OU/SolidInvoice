@@ -18,3 +18,5 @@
     {{ parent() }}
     {{ encore_entry_script_tags('app') }}
 {% endblock javascripts %}
+
+{% block head_title %}{% set head_title = block('page_title')|striptags|trim %}{{ (head_title is not empty ? head_title ~ ' · ' : '')|raw }}{{ app_name }}{% endblock %}

@@ -37,7 +37,7 @@
 {# Suppression of "Powered by" only takes effect when the `custom_branding` feature is on
    for the current plan; without it, we render the line regardless of the stored value. #}
 {% set hide_powered_by_value = setting('system/general/hide_powered_by') is same as ('1') %}
-{% set hide_powered_by = hide_powered_by_value and feature_enabled('custom_branding') %}
+{% set hide_powered_by = white_label() or (hide_powered_by_value and feature_enabled('custom_branding')) %}
 <htmlpagefooter name="footer">
     <table width="100%" style="font-size: 8pt; color: #64748b;">
         <tr>
