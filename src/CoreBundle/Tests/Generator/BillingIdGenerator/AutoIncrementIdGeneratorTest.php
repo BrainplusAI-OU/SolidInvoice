@@ -114,4 +114,57 @@ final class AutoIncrementIdGeneratorTest extends KernelTestCase
 
         self::assertSame('102', $generator->generate(new Invoice(), ['field' => 'invoiceId', 'prefix' => 'INV-', 'suffix' => '-00']));
     }
+
+    public function testItIgnoresANumberThatIsNotWrittenInTheConfiguredFormat(): void
+    {
+        $client = ClientFactory::new([]);
+
+        // Typed by hand with no prefix configured. MySQL, MariaDB and SQLite cast it to
+        // 2026, which used to make the next number "2027".
+        InvoiceFactory::createOne(['client' => $client, 'invoiceId' => '2026-0001']);
+
+        $generator = new AutoIncrementIdGenerator(self::getContainer()->get('doctrine'));
+
+        self::assertSame('1', $generator->generate(new Invoice(), ['field' => 'invoiceId', 'prefix' => '', 'suffix' => '']));
+
+        InvoiceFactory::createOne(['client' => $client, 'invoiceId' => '7']);
+
+        self::assertSame('8', $generator->generate(new Invoice(), ['field' => 'invoiceId', 'prefix' => '', 'suffix' => '']));
+    }
+
+    public function testItKeepsTheZeroPaddingOfTheHighestNumber(): void
+    {
+        $client = ClientFactory::new([]);
+
+        InvoiceFactory::createOne(['client' => $client, 'invoiceId' => '2026-0001']);
+
+        $generator = new AutoIncrementIdGenerator(self::getContainer()->get('doctrine'));
+        $options = ['field' => 'invoiceId', 'prefix' => '2026-', 'suffix' => ''];
+
+        self::assertSame('0002', $generator->generate(new Invoice(), $options));
+
+        InvoiceFactory::createOne(['client' => $client, 'invoiceId' => '2026-0009']);
+
+        self::assertSame('0010', $generator->generate(new Invoice(), $options));
+
+        InvoiceFactory::createOne(['client' => $client, 'invoiceId' => '2026-9999']);
+
+        self::assertSame('10000', $generator->generate(new Invoice(), $options));
+    }
+
+    public function testANewPrefixStartsItsOwnSequence(): void
+    {
+        $client = ClientFactory::new([]);
+
+        InvoiceFactory::createOne(['client' => $client, 'invoiceId' => '2026-0041']);
+
+        $generator = new AutoIncrementIdGenerator(self::getContainer()->get('doctrine'));
+
+        self::assertSame('1', $generator->generate(new Invoice(), ['field' => 'invoiceId', 'prefix' => '2027-', 'suffix' => '']));
+
+        InvoiceFactory::createOne(['client' => $client, 'invoiceId' => '2027-0001']);
+
+        self::assertSame('0002', $generator->generate(new Invoice(), ['field' => 'invoiceId', 'prefix' => '2027-', 'suffix' => '']));
+        self::assertSame('0042', $generator->generate(new Invoice(), ['field' => 'invoiceId', 'prefix' => '2026-', 'suffix' => '']));
+    }
 }

@@ -2464,10 +2464,10 @@ settings:
         numbering:
             example: 'Example:'
             prefix: 'ID Prefix'
-            prefix_help: 'Added before the number. E.g., "INV-" results in INV-001'
+            prefix_help: 'Added before the number, exactly as typed. E.g., "INV-" results in INV-1. Only numbers that carry this prefix and suffix count, and their zero padding is kept: INV-0041 is followed by INV-0042. A new prefix starts again from 1.'
             strategy: 'Numbering Strategy'
             suffix: 'ID Suffix'
-            suffix_help: 'Added after the number. E.g., "-2024" results in 001-2024'
+            suffix_help: 'Added after the number, exactly as typed. E.g., "-2024" results in 1-2024'
             title: 'Numbering Scheme'
         payment_terms:
             help: 'New invoices start with these terms. A client can have its own terms instead. Custom leaves the due date for you to fill in.'

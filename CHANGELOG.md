@@ -27,6 +27,7 @@ Changelog
 
 ### Fixes
 
+* Automatic invoice and quote numbers only count earlier numbers written with the configured prefix and suffix, and keep their zero padding. A number typed by hand such as `2026-0001` no longer makes the next one `2027` (or `20260002` on PostgreSQL), `2026-0041` is followed by `2026-0042`, and changing the prefix to `2027-` starts again from 1
 * MCP clients that connect without a token now receive a `WWW-Authenticate` header pointing them to the OAuth metadata, so they can start sign-in automatically
 * The installer no longer stops with a JavaScript error when installation finishes
 * Deleting a custom field whose name contains an apostrophe now shows its confirmation prompt

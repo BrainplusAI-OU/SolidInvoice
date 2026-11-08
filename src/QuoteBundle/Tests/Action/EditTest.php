@@ -48,9 +48,7 @@ final class EditTest extends KernelTestCase
             'company' => $this->company,
             'currencyCode' => 'USD',
             'total' => 100000,
-            // A blank quoteId makes QuoteType generate one via AutoIncrementIdGenerator, which
-            // runs MAX(TO_NUMBER(quoteId)) over every row including this one - PostgreSQL's
-            // to_number() rejects an empty string outright (MySQL/SQLite do not), so a real
+            // A blank quoteId makes QuoteType generate one via AutoIncrementIdGenerator; a real
             // value here keeps the test about currency scaling, not ID generation.
             'quoteId' => 'QUO-0001',
         ])->getId();
