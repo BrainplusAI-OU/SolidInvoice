@@ -20,6 +20,7 @@ use Doctrine\Persistence\ManagerRegistry;
 use SolidInvoice\ApiBundle\Versioning\ApiVersion;
 use SolidInvoice\ClientBundle\Entity\Client;
 use SolidInvoice\CoreBundle\Contracts\HasFrozenCurrencyInterface;
+use SolidInvoice\ExpenseBundle\Entity\Expense;
 use SolidInvoice\InvoiceBundle\Entity\Line as InvoiceLine;
 use SolidInvoice\InvoiceBundle\Entity\RecurringInvoiceLine;
 use SolidInvoice\PaymentBundle\Entity\Payment;
@@ -65,6 +66,7 @@ final class MoneyCurrencyNormalizer implements NormalizerInterface, NormalizerAw
         RecurringInvoiceLine::class,
         Payment::class,
         Client::class,
+        Expense::class,
     ];
 
     public function __construct(
@@ -131,6 +133,7 @@ final class MoneyCurrencyNormalizer implements NormalizerInterface, NormalizerAw
                 $record instanceof QuoteLine => $record->getQuote()->resolveCurrencyCode(),
                 $record instanceof Payment => $record->getCurrencyCode(),
                 $record instanceof Client => $record->getCurrencyCode(),
+                $record instanceof Expense => $record->getCurrencyCode(),
                 default => null,
             };
         } catch (Throwable) {
@@ -140,7 +143,7 @@ final class MoneyCurrencyNormalizer implements NormalizerInterface, NormalizerAw
     }
 
     /**
-     * A new client states its currency; a new document names its client.
+     * A new client or expense states its currency; a new document names its client.
      */
     private function currencyFromPayload(mixed $data, string $type): ?string
     {
@@ -148,7 +151,7 @@ final class MoneyCurrencyNormalizer implements NormalizerInterface, NormalizerAw
             return null;
         }
 
-        if (is_a($type, Client::class, true)) {
+        if (is_a($type, Client::class, true) || is_a($type, Expense::class, true)) {
             return is_string($data['currencyCode'] ?? null) ? $data['currencyCode'] : null;
         }
 

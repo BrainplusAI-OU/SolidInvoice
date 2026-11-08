@@ -30,6 +30,13 @@ document:
     send:
         no_recipients: 'There is no one to send this to. Add a contact with an email address.'
         unknown_contact: 'This is not a contact of the client this document is for.'
+expense:
+    attachment:
+        empty: 'The file is empty or could not be read.'
+        invalid_type: 'Only PDF and image files can be attached.'
+        too_large: 'The file is larger than {{ limit }} MB.'
+    tax_amount:
+        exceeds_amount: 'The tax cannot be more than the amount paid.'
 install:
     database:
         driver:

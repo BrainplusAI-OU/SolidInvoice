@@ -1,0 +1,59 @@
+{#
+ # This file is part of SolidInvoice package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+<div class="col-12 mb-4">
+    <twig:Ui:Card>
+        <twig:block name="header">
+            <div class="w-100">
+                <h3 class="card-title mb-0">{{ 'expense.dashboard.title'|trans }}</h3>
+                <small class="text-muted">{{ 'dashboard.charts.revenue_subtitle'|trans({'%count%': months}) }}</small>
+            </div>
+        </twig:block>
+
+        <div class="dashboard-chart-container">
+            {% if hasError %}
+                {% include '@SolidInvoiceDashboard/Widget/_error_state.html.twig' %}
+            {% elseif not hasData %}
+                <div class="dashboard-chart-empty">
+                    <div class="dashboard-chart-empty-icon">
+                        {{ ux_icon('tabler:receipt-2', {width: 48, height: 48}) }}
+                    </div>
+                    <p class="dashboard-chart-empty-text">{{ 'dashboard.charts.no_data'|trans }}</p>
+                </div>
+            {% else %}
+                {{ render_chart(chart, {'class': 'dashboard-revenue-chart'}) }}
+            {% endif %}
+        </div>
+
+        {% if hasData %}
+            <div class="table-responsive mt-3">
+                <table class="table table-sm mb-0">
+                    <thead>
+                        <tr>
+                            <th>{{ 'expense.dashboard.currency'|trans }}</th>
+                            <th class="text-end">{{ 'expense.dashboard.total_revenue'|trans }}</th>
+                            <th class="text-end">{{ 'expense.dashboard.total_expenses'|trans }}</th>
+                            <th class="text-end">{{ 'expense.dashboard.net'|trans }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for total in totals %}
+                            <tr>
+                                <td>{{ total.currency }}</td>
+                                <td class="text-end">{{ total.revenue|formatCurrency(total.currency) }}</td>
+                                <td class="text-end">{{ total.expenses|formatCurrency(total.currency) }}</td>
+                                <td class="text-end fw-semibold {{ total.net.isNegative ? 'text-danger' : 'text-success' }}">{{ total.net|formatCurrency(total.currency) }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </twig:Ui:Card>
+</div>
