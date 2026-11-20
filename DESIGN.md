@@ -144,6 +144,13 @@ components:
 
 # Design System: SolidInvoice
 
+> **BrainplusAI fork: "workspace" theme.** `assets/scss/themes/_workspace.scss`, imported last
+> by `app.scss`, re-skins this design system without editing the upstream files: Palmora blue
+> accent (#1559bc) instead of green, plain grey neutrals (#f7f7f7 / #ebebeb / #333), 13px base
+> type, a light sidebar, the page on one bordered white panel, 32px table rows, 4-8px radii and
+> no resting shadows. The sections below describe the upstream theme; where they differ, the
+> theme file is authoritative for this fork.
+
 ## 1. Overview
 
 **Creative North Star: "The Friendly Desk"**

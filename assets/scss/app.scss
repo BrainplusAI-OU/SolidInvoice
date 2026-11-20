@@ -137,3 +137,11 @@ $alert-secondary-text: $orange-dark;
     border-radius: 8px;
     font-weight: 600;
 } */
+
+// ============================================================================
+// 9. WORKSPACE THEME (BrainplusAI fork)
+// ============================================================================
+
+// Imported last: re-skins the design system above without editing it, so the
+// fork keeps rebasing cleanly on upstream. See themes/_workspace.scss.
+@import './themes/workspace';
