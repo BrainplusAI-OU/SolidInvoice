@@ -26,6 +26,11 @@ use SolidInvoice\DataGridBundle\GridBuilder\Column\MoneyColumn;
 use Symfony\Component\PropertyAccess\Exception\NoSuchPropertyException;
 use Symfony\Component\PropertyAccess\PropertyAccessorInterface;
 use Symfony\Component\Uid\Ulid;
+use function array_column;
+use function array_filter;
+use function array_map;
+use function implode;
+use function is_array;
 use function is_scalar;
 use function str_contains;
 use function strstr;
@@ -160,6 +165,17 @@ final readonly class GridRowExtractor
     {
         if ($value instanceof Money) {
             return ValueFormatter::flattenMoney($field, $value, $this->currencies);
+        }
+
+        // One Money per currency (a client total spanning currencies): one amount and
+        // one currency per currency, in the same order, separated by "; ".
+        if (is_array($value) && $value !== [] && array_filter($value, static fn (mixed $m): bool => ! $m instanceof Money) === []) {
+            $parts = array_map(fn (Money $money): array => ValueFormatter::flattenMoney($field, $money, $this->currencies), $value);
+
+            return [
+                $field . '_amount' => implode('; ', array_column($parts, $field . '_amount')),
+                $field . '_currency' => implode('; ', array_column($parts, $field . '_currency')),
+            ];
         }
 
         if ($value instanceof BigNumber) {
