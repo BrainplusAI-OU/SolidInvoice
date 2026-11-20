@@ -45,6 +45,8 @@ final class InvoiceSendTest extends ApiTestCase
      */
     private array $events = [];
 
+    private int $clients = 0;
+
     protected function getResourceClass(): string
     {
         return Invoice::class;
@@ -322,7 +324,12 @@ final class InvoiceSendTest extends ApiTestCase
      */
     private function createInvoice(InvoiceStatus $status, array $attributes = []): Invoice
     {
-        $client = ClientFactory::createOne(['currencyCode' => 'USD']);
+        // An explicit name: clients are unique per (name, company), and a test that sends
+        // a dozen invoices drew the same Faker company name twice now and then.
+        $client = ClientFactory::createOne([
+            'currencyCode' => 'USD',
+            'name' => sprintf('Send test client %d', ++$this->clients),
+        ]);
 
         return InvoiceFactory::createOne([
             'client' => $client,

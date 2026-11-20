@@ -32,10 +32,15 @@ use SolidInvoice\DataGridBundle\GridInterface;
 use SolidInvoice\DataGridBundle\Paginator\Adapter\QueryAdapter;
 use SolidInvoice\DataGridBundle\Render\GridFieldRenderer;
 use SolidInvoice\DataGridBundle\Source\SourceInterface;
+use SolidInvoice\UserBundle\Entity\User;
+use SolidInvoice\UserBundle\Entity\UserGridPreference;
+use SolidInvoice\UserBundle\Repository\UserGridPreferenceRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\AutowireLocator;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Uid\Ulid;
 use Symfony\UX\LiveComponent\Attribute\AsLiveComponent;
 use Symfony\UX\LiveComponent\Attribute\LiveAction;
@@ -76,10 +81,10 @@ class DataGrid extends AbstractController
     #[LiveProp(writable: true, url: true)]
     public int $page = 1;
 
-    #[LiveProp(writable: true, url: true)]
+    #[LiveProp(writable: true, onUpdated: 'rememberPreferences', url: true)]
     public string $sort = '';
 
-    #[LiveProp(writable: true, url: true)]
+    #[LiveProp(writable: true, onUpdated: 'rememberPreferences', url: true)]
     public int $perPage = 10;
 
     #[LiveProp(writable: true, url: true)]
@@ -120,6 +125,57 @@ class DataGrid extends AbstractController
         }
     }
 
+    /**
+     * Restores how the current user last left this grid (hidden columns, sort, page
+     * size), so a page refresh or a later visit keeps them. A value given in the URL
+     * wins over the saved one.
+     */
+    #[PostMount(priority: 20)]
+    public function restorePreferences(): void
+    {
+        $preference = $this->preference();
+
+        if (! $preference instanceof UserGridPreference) {
+            return;
+        }
+
+        $request = $this->requestStack->getMainRequest();
+        $inUrl = static fn (string $key): bool => $request instanceof Request && $request->query->has($key);
+
+        if (! $inUrl('hiddenColumns')) {
+            $this->hiddenColumns = $preference->getHiddenColumns();
+        }
+
+        if (! $inUrl('sort') && $preference->getSort() !== null) {
+            $this->sort = $preference->getSort();
+        }
+
+        if (! $inUrl('perPage') && $preference->getPerPage() !== null) {
+            $this->perPage = $preference->getPerPage();
+        }
+    }
+
+    /**
+     * Saves the current hidden columns, sort and page size for the current user.
+     */
+    public function rememberPreferences(): void
+    {
+        $user = $this->getUser();
+
+        if (! $user instanceof User) {
+            return;
+        }
+
+        $this->gridPreferences->saveForGrid($user, $this->name, $this->hiddenColumns, $this->sort, $this->perPage);
+    }
+
+    private function preference(): ?UserGridPreference
+    {
+        $user = $this->getUser();
+
+        return $user instanceof User ? $this->gridPreferences->findForGrid($user, $this->name) : null;
+    }
+
     public function selectAll(): void
     {
         if ($this->selectedAll) {
@@ -152,6 +208,8 @@ class DataGrid extends AbstractController
         #[AutowireLocator(AsDataGrid::DI_TAG, 'name')]
         private readonly ServiceLocator $serviceLocator,
         private readonly GridQueryService $gridQueryService,
+        private readonly UserGridPreferenceRepository $gridPreferences,
+        private readonly RequestStack $requestStack,
     ) {
     }
 
@@ -400,12 +458,16 @@ class DataGrid extends AbstractController
         } else {
             $this->hiddenColumns[] = $field;
         }
+
+        $this->rememberPreferences();
     }
 
     #[LiveAction]
     public function resetColumns(): void
     {
         $this->hiddenColumns = [];
+
+        $this->rememberPreferences();
     }
 
     /**

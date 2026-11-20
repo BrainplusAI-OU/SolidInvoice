@@ -120,4 +120,17 @@ final class MoneyFormatterTest extends TestCase
 
         self::assertSame('¥1,000', $result);
     }
+
+    public function testFormatListsOneAmountPerCurrency(): void
+    {
+        $euros = new Money(22100000, new Currency('EUR'));
+        $baht = new Money(4500000, new Currency('THB'));
+
+        $this->moneyFormatter->expects('format')->with($euros)->andReturn('221 000,00 €');
+        $this->moneyFormatter->expects('format')->with($baht)->andReturn('45 000,00 THB');
+
+        $result = $this->formatter->format(MoneyColumn::new('total'), [$euros, $baht]);
+
+        self::assertSame('221 000,00 € · 45 000,00 THB', $result);
+    }
 }
