@@ -248,6 +248,38 @@ company:
         welcome_back: 'Welcome Back %name%'
 contact:
     email: Email
+credit_note:
+    error:
+        amount_out_of_range: 'The amount must be above zero and at most what is left to credit on the invoice.'
+        not_creditable: 'This invoice cannot take a credit note: it has not been issued, has been cancelled, or is already credited in full.'
+        reason_required: 'Give the reason for the credit note.'
+    flash:
+        issued: 'Credit note %number% issued.'
+    form:
+        amount: 'Amount to credit, before tax'
+        amount_help: 'Tax and withholding are credited in the same proportion as on the invoice.'
+        date: 'Date of the credit note'
+        reason: Reason
+        reason_help: 'Printed on the credit note, as Thai law requires: a returned item, a price corrected, a discount granted afterwards…'
+    issue: 'Issue a credit note'
+    issue_subtitle: 'Corrects invoice #%invoice%, which can no longer be changed.'
+    pdf:
+        amount: Difference
+        corrected_amount: 'Correct value'
+        date: Date
+        invoice: 'Original invoice'
+        invoice_date: 'Invoice date'
+        original_amount: 'Original value'
+        payable: 'Reduction of the amount payable'
+        reason: 'Reason for the credit note'
+        tax: 'VAT on the difference'
+        thai_title: ใบลดหนี้
+        title: 'Credit note'
+        total: 'Total credited'
+        withholding: 'Tax no longer withheld'
+    view:
+        download: 'Download PDF'
+        title: 'Credit notes'
 custom_field:
     add: 'Add field'
     badge:

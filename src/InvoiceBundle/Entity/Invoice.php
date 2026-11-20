@@ -294,6 +294,13 @@ class Invoice extends BaseInvoice implements Stringable
     #[ApiProperty(example: ['/api/payments/3fa85f64-5717-4562-b3fc-2c963f66afa6'])]
     private Collection $payments;
 
+    /**
+     * @var Collection<int, CreditNote>
+     */
+    #[ORM\OneToMany(targetEntity: CreditNote::class, mappedBy: 'invoice')]
+    #[ORM\OrderBy(['created' => 'ASC'])]
+    private Collection $creditNotes;
+
     #[ORM\OneToOne(targetEntity: Quote::class, inversedBy: 'invoice')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     #[Groups(['invoice_api:read'])]
@@ -339,6 +346,7 @@ class Invoice extends BaseInvoice implements Stringable
         parent::__construct();
 
         $this->payments = new ArrayCollection();
+        $this->creditNotes = new ArrayCollection();
         $this->lines = new ArrayCollection();
         $this->users = new ArrayCollection();
         $this->invoiceTaxes = new ArrayCollection();
@@ -534,6 +542,51 @@ class Invoice extends BaseInvoice implements Stringable
     public function getPayments(): Collection
     {
         return $this->payments;
+    }
+
+    /**
+     * @return Collection<int, CreditNote>
+     */
+    public function getCreditNotes(): Collection
+    {
+        return $this->creditNotes;
+    }
+
+    public function addCreditNote(CreditNote $creditNote): self
+    {
+        if (! $this->creditNotes->contains($creditNote)) {
+            $this->creditNotes->add($creditNote);
+        }
+
+        return $this;
+    }
+
+    /**
+     * What the credit notes take off the total, tax included.
+     */
+    public function getCreditedTotal(): BigInteger
+    {
+        $credited = BigInteger::zero();
+
+        foreach ($this->creditNotes as $creditNote) {
+            $credited = $credited->plus($creditNote->getTotal());
+        }
+
+        return $credited;
+    }
+
+    /**
+     * What the credit notes take off the value before tax.
+     */
+    public function getCreditedAmount(): BigInteger
+    {
+        $credited = BigInteger::zero();
+
+        foreach ($this->creditNotes as $creditNote) {
+            $credited = $credited->plus($creditNote->getAmount());
+        }
+
+        return $credited;
     }
 
     public function retainsFrozenCurrency(): bool

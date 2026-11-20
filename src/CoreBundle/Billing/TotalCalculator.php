@@ -52,7 +52,7 @@ class TotalCalculator
             $total = $entity->getTotal();
             assert($total instanceof BigDecimal || $total instanceof BigInteger);
 
-            $entity->setBalance($total->minus($totalPaid));
+            $entity->setBalance($total->minus($totalPaid)->minus($entity->getCreditedTotal()));
         }
     }
 

@@ -1,0 +1,95 @@
+{#
+ # This file is part of SolidInvoice package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+{#
+ # A credit note. Shows what a Thai ใบลดหนี้ must (Revenue Code, section 86/10): the title, the
+ # issuer and the buyer with their tax numbers, its number and date, the invoice it corrects with
+ # that invoice's date, the value before and after the correction, the difference, the VAT on the
+ # difference, and the reason.
+ #}
+{% extends '@SolidInvoiceInvoice/Templates/_pdf_base.html.twig' %}
+{% import '@SolidInvoiceInvoice/Templates/_macros.html.twig' as inv %}
+
+{% set currency = creditNote.currency %}
+{% set cell = 'padding: 10px 16px; font-size: 9pt; color: #1e293b; border-bottom: 1px solid #f1f5f9;' %}
+{% set amountCell = cell ~ ' text-align: right; font-family: \'Courier New\', monospace;' %}
+
+{% block body %}
+<table cellpadding="0" cellspacing="0" style="width: 100%; border: 2px solid #1e293b; margin-bottom: 24px;">
+    <tr>
+        <td style="padding: 16px 20px; border-right: 1px solid #cbd5e1; vertical-align: top; width: 50%;">
+            {% if setting('system/company/logo') is not empty %}
+                <div style="margin-bottom: 8px;">{{ app_logo(50) }}</div>
+            {% endif %}
+            <div style="font-size: 16pt; font-weight: bold; color: #1e293b;">{{ company_name() }}</div>
+        </td>
+        <td style="padding: 16px 20px; vertical-align: top; text-align: right; width: 50%;">
+            <div style="font-size: 9pt; color: #64748b; text-transform: uppercase; letter-spacing: 2px;">
+                {{ 'credit_note.pdf.title'|trans }} · {{ 'credit_note.pdf.thai_title'|trans }}
+            </div>
+            <div style="font-size: 22pt; font-weight: bold; color: #1e293b;">#{{ creditNote.number }}</div>
+        </td>
+    </tr>
+</table>
+
+<table cellpadding="0" cellspacing="0" style="width: 100%; margin-bottom: 24px;">
+    <tr>
+        <td style="width: 33%; vertical-align: top; padding-right: 16px;">
+            {{ inv.from_block() }}
+        </td>
+        <td style="width: 33%; vertical-align: top; padding-right: 16px;">
+            {{ inv.bill_to_block(invoice) }}
+        </td>
+        <td style="width: 34%; vertical-align: top;">
+            {{ inv.meta_pair('credit_note.pdf.date'|trans, creditNote.date|format_date('long')) }}
+            {{ inv.meta_pair('credit_note.pdf.invoice'|trans, '#' ~ invoice.invoiceId, true) }}
+            {{ inv.meta_pair('credit_note.pdf.invoice_date'|trans, invoice.invoiceDate|format_date('long')) }}
+        </td>
+    </tr>
+</table>
+
+<table cellpadding="0" cellspacing="0" style="width: 100%; border-collapse: collapse; margin-bottom: 24px; border: 1px solid #e2e8f0;">
+    <tbody>
+        <tr>
+            <td style="{{ cell }}">{{ 'credit_note.pdf.original_amount'|trans }}</td>
+            <td style="{{ amountCell }}">{{ creditNote.originalAmount|formatCurrency(currency) }}</td>
+        </tr>
+        <tr>
+            <td style="{{ cell }}">{{ 'credit_note.pdf.corrected_amount'|trans }}</td>
+            <td style="{{ amountCell }}">{{ creditNote.correctedAmount|formatCurrency(currency) }}</td>
+        </tr>
+        <tr>
+            <td style="{{ cell }} font-weight: 600;">{{ 'credit_note.pdf.amount'|trans }}</td>
+            <td style="{{ amountCell }} font-weight: 600;">{{ creditNote.amount|formatCurrency(currency) }}</td>
+        </tr>
+        <tr>
+            <td style="{{ cell }}">{{ 'credit_note.pdf.tax'|trans }}</td>
+            <td style="{{ amountCell }}">{{ creditNote.tax|formatCurrency(currency) }}</td>
+        </tr>
+        <tr style="background-color: #f8fafc;">
+            <td style="{{ cell }} font-weight: bold;">{{ 'credit_note.pdf.total'|trans }}</td>
+            <td style="{{ amountCell }} font-weight: bold;">{{ creditNote.total|formatCurrency(currency) }}</td>
+        </tr>
+        {% if creditNote.withholding.isPositive %}
+            <tr>
+                <td style="{{ cell }}">{{ 'credit_note.pdf.withholding'|trans }}</td>
+                <td style="{{ amountCell }}">-{{ creditNote.withholding|formatCurrency(currency) }}</td>
+            </tr>
+            <tr>
+                <td style="{{ cell }} font-weight: 600;">{{ 'credit_note.pdf.payable'|trans }}</td>
+                <td style="{{ amountCell }} font-weight: 600;">{{ creditNote.payableAmount|formatCurrency(currency) }}</td>
+            </tr>
+        {% endif %}
+    </tbody>
+</table>
+
+<div style="font-size: 8pt; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 6px;">
+    {{ 'credit_note.pdf.reason'|trans }}
+</div>
+<div style="font-size: 10pt; color: #1e293b; line-height: 1.6;">{{ creditNote.reason|nl2br }}</div>
+{% endblock %}

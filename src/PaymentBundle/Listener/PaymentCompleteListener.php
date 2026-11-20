@@ -73,7 +73,7 @@ class PaymentCompleteListener implements EventSubscriberInterface
                 $paymentRepository = $this->registry->getRepository(Payment::class);
                 $invoiceTotal = $invoice->getTotal();
                 $totalPaid = $paymentRepository->getTotalPaidForInvoice($invoice);
-                $invoice->setBalance($invoiceTotal->toBigDecimal()->minus($totalPaid));
+                $invoice->setBalance($invoiceTotal->toBigDecimal()->minus($totalPaid)->minus($invoice->getCreditedTotal()));
 
                 $em = $this->registry->getManager();
                 $em->persist($invoice);

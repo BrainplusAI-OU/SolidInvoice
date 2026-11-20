@@ -20,6 +20,7 @@ use SolidInvoice\CoreBundle\Response\PdfResponse;
 use SolidInvoice\CoreBundle\Templates\BillingTemplateChannel;
 use SolidInvoice\CoreBundle\Templates\BillingTemplateResolver;
 use SolidInvoice\InvoiceBundle\Entity\Invoice;
+use SolidInvoice\InvoiceBundle\Service\CreditNoteIssuer;
 use SolidInvoice\PaymentBundle\Repository\PaymentRepository;
 use Symfony\Bridge\Twig\Attribute\Template;
 use Symfony\Component\HttpFoundation\Request;
@@ -44,7 +45,7 @@ final readonly class View
     }
 
     /**
-     * @return array{invoice: Invoice, payments: array<string, mixed>, documentTemplate: string|null}|Response
+     * @return array{invoice: Invoice, payments: array<string, mixed>, documentTemplate: string|null, canIssueCreditNote: bool}|Response
      * @throws LoaderError
      * @throws MpdfException
      * @throws RuntimeError
@@ -63,6 +64,7 @@ final readonly class View
             'invoice' => $invoice,
             'payments' => $this->paymentRepository->getPaymentsForInvoice($invoice),
             'documentTemplate' => $this->templateResolver->customTemplate($invoice, BillingTemplateChannel::View),
+            'canIssueCreditNote' => CreditNoteIssuer::canBeCredited($invoice),
         ];
     }
 }

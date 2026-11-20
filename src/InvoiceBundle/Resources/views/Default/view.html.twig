@@ -122,6 +122,15 @@
                             </li>
                         {% endif %}
 
+                        {% if canIssueCreditNote %}
+                            <li>
+                                <a class="dropdown-item" href="{{ path('_invoices_credit_note', {'id' : invoice.id}) }}">
+                                    {{ ux_icon('tabler:receipt', {width: 16, height: 16}) }}
+                                    {{ "credit_note.issue"|trans }}
+                                </a>
+                            </li>
+                        {% endif %}
+
                         {% if workflow_can(invoice, 'reopen') %}
                             <li>
                                 <a class="dropdown-item" href="{{ path('_action_invoice', {'action' : 'reopen', 'id' : invoice.id}) }}">
@@ -533,6 +542,40 @@
                                         {% if payment.message is not empty %}
                                             <div class="payment-message">{{ payment.message }}</div>
                                         {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if invoice.creditNotes|length > 0 %}
+                <div class="doc-sidebar-card">
+                    <div class="doc-sidebar-card-header">
+                        <div class="doc-sidebar-card-icon">
+                            {{ ux_icon('tabler:receipt', {width: 18, height: 18}) }}
+                        </div>
+                        <h3 class="doc-sidebar-card-title">{{ 'credit_note.view.title'|trans }}</h3>
+                    </div>
+                    <div class="doc-sidebar-card-body">
+                        <div class="payments-list">
+                            {% for creditNote in invoice.creditNotes %}
+                                <div class="payment-card">
+                                    <div class="payment-card-header">
+                                        <div class="payment-amount">-{{ creditNote.total|formatCurrency(creditNote.currency) }}</div>
+                                        <div class="payment-status">{{ creditNote.number }}</div>
+                                    </div>
+                                    <div class="payment-card-body">
+                                        <div class="payment-date">
+                                            {{ ux_icon('tabler:calendar', {width: 14, height: 14}) }}
+                                            {{ creditNote.date|format_date('medium') }}
+                                        </div>
+                                        <div class="payment-message">{{ creditNote.reason }}</div>
+                                        <a href="{{ path('_credit_notes_view', {'id' : creditNote.id}) }}" target="_blank" rel="noopener">
+                                            {{ ux_icon('tabler:download', {width: 14, height: 14}) }}
+                                            {{ 'credit_note.view.download'|trans }}
+                                        </a>
                                     </div>
                                 </div>
                             {% endfor %}

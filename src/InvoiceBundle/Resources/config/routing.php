@@ -19,6 +19,7 @@ use SolidInvoice\InvoiceBundle\Action\Edit;
 use SolidInvoice\InvoiceBundle\Action\EditRecurring;
 use SolidInvoice\InvoiceBundle\Action\Fields;
 use SolidInvoice\InvoiceBundle\Action\Index;
+use SolidInvoice\InvoiceBundle\Action\IssueCreditNote;
 use SolidInvoice\InvoiceBundle\Action\RecurringIndex;
 use SolidInvoice\InvoiceBundle\Action\RecurringTransition;
 use SolidInvoice\InvoiceBundle\Action\SendManualReminder;
@@ -26,6 +27,7 @@ use SolidInvoice\InvoiceBundle\Action\SendTestCopy;
 use SolidInvoice\InvoiceBundle\Action\Transition;
 use SolidInvoice\InvoiceBundle\Action\Transition\Send;
 use SolidInvoice\InvoiceBundle\Action\View;
+use SolidInvoice\InvoiceBundle\Action\ViewCreditNote;
 use SolidInvoice\InvoiceBundle\Action\ViewRecurring;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
@@ -51,6 +53,16 @@ return static function (RoutingConfigurator $routingConfigurator): void {
     $routingConfigurator
         ->add('_invoices_get_fields', '/fields/get/{currency}')
         ->controller(Fields::class);
+
+    $routingConfigurator
+        ->add('_invoices_credit_note', '/credit-note/{id}')
+        ->controller(IssueCreditNote::class)
+        ->methods(['GET', 'POST']);
+
+    $routingConfigurator
+        ->add('_credit_notes_view', '/credit-notes/{id}.pdf')
+        ->controller(ViewCreditNote::class)
+        ->methods(['GET']);
 
     $routingConfigurator
         ->add('_invoices_edit', '/edit/{id}')
