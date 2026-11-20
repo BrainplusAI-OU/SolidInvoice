@@ -26,6 +26,7 @@ use InvalidArgumentException;
 use Override;
 use PDO;
 use RuntimeException;
+use SolidInvoice\CoreBundle\Branding\Brand;
 use SolidInvoice\CoreBundle\ConfigWriter;
 use SolidInvoice\CoreBundle\Entity\Version;
 use SolidInvoice\CoreBundle\Repository\VersionRepository;
@@ -82,11 +83,20 @@ class InstallCommand extends Command
         private readonly ServiceLocator $installationSteps,
         private readonly KernelInterface $kernel,
         private readonly Telemetry $telemetry,
+        private readonly Brand $brand,
         #[Autowire(env: 'SOLIDINVOICE_CONFIG_DIR')]
         private readonly string $configDir,
         private readonly ?string $installed
     ) {
         parent::__construct();
+    }
+
+    /**
+     * Off under another brand: usage statistics go to SolidInvoice's publisher.
+     */
+    private function telemetryEnabled(InputInterface $input): bool
+    {
+        return ! $input->getOption('disable-telemetry') && ! $this->brand->isWhiteLabel();
     }
 
     #[Override]
@@ -124,7 +134,7 @@ class InstallCommand extends Command
             ->saveConfig($input)
             ->install($input, $output);
 
-        if (! $input->getOption('disable-telemetry')) {
+        if ($this->telemetryEnabled($input)) {
             $this->telemetry->event(TelemetryEvent::InstallCompleted, ['method' => 'cli'], true);
         }
 
@@ -295,7 +305,7 @@ class InstallCommand extends Command
         $config = [
             'database_url' => DatabaseConfig::paramsToDatabaseUrl($params),
             'locale' => $input->getOption('locale'),
-            'enable_telemetry' => $input->getOption('disable-telemetry') ? '0' : '1',
+            'enable_telemetry' => $this->telemetryEnabled($input) ? '1' : '0',
             'app_secret' => Key::createNewRandomKey()->saveToAsciiSafeString(),
         ];
 

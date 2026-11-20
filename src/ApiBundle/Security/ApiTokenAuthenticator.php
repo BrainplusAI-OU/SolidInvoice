@@ -67,7 +67,7 @@ class ApiTokenAuthenticator extends AbstractAuthenticator
         $history->setMethod($request->getMethod())
             ->setIp($request->getClientIp())
             ->setRequestData($request->request->all())
-            ->setUserAgent($request->server->get('HTTP_USER_AGENT'))
+            ->setUserAgent((string) $request->headers->get('User-Agent'))
             ->setResource($request->getPathInfo());
 
         /** @var ApiTokenHistoryRepository $repository */

@@ -13,7 +13,6 @@ declare(strict_types=1);
 
 namespace SolidInvoice\InvoiceBundle\Tests\Functional;
 
-use Brick\Math\BigInteger;
 use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
 use PHPUnit\Framework\Attributes\CoversClass;
@@ -29,7 +28,6 @@ use SolidInvoice\InvoiceBundle\Enum\InvoiceStatus;
 use SolidInvoice\InvoiceBundle\Model\Graph;
 use SolidInvoice\InvoiceBundle\Repository\InvoiceRepository;
 use SolidInvoice\InvoiceBundle\Test\Factory\InvoiceFactory;
-use SolidInvoice\PaymentBundle\Test\Factory\PaymentFactory;
 use SolidInvoice\SettingsBundle\SystemConfig;
 use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 use Symfony\Component\Workflow\WorkflowInterface;
@@ -275,150 +273,5 @@ final class InvoiceCurrencyFreezeTest extends KernelTestCase
         $this->expectException(LogicException::class);
 
         $entityManager->flush();
-    }
-
-    /**
-     * The sibling of {@see self::testCancelledThenReopenedDraftStillFollowsItsClient()}
-     * that starts from an issued invoice. That test starts from a draft, which was never
-     * frozen, so it passes vacuously; this one proves `reopen` (`[Cancelled] → [Draft]`)
-     * actually thaws a frozen `currency_code`, not just one that was already null.
-     */
-    public function testCancelledThenReopenedIssuedInvoiceThawsAndFollowsItsClientAgain(): void
-    {
-        $usdClient = ClientFactory::createOne(['currencyCode' => 'USD', 'company' => $this->company]);
-        $eurClient = ClientFactory::createOne(['currencyCode' => 'EUR', 'company' => $this->company]);
-        $invoiceId = InvoiceFactory::createOne([
-            'status' => InvoiceStatus::Draft,
-            'client' => $usdClient,
-            'company' => $this->company,
-        ])->getId();
-
-        $container = self::getContainer();
-        $entityManager = $container->get('doctrine')->getManager();
-        self::assertInstanceOf(EntityManagerInterface::class, $entityManager);
-        $entityManager->clear();
-
-        $repository = $container->get(InvoiceRepository::class);
-        $invoice = $repository->find($invoiceId);
-        self::assertInstanceOf(Invoice::class, $invoice);
-
-        $workflow = $container->get('state_machine.invoice');
-        self::assertInstanceOf(WorkflowInterface::class, $workflow);
-
-        $workflow->apply($invoice, Graph::TRANSITION_ACCEPT);
-        $entityManager->flush();
-        self::assertSame('USD', $invoice->getCurrencyCode());
-
-        $workflow->apply($invoice, Graph::TRANSITION_CANCEL);
-        $entityManager->flush();
-        self::assertSame('USD', $invoice->getCurrencyCode());
-
-        $workflow->apply($invoice, Graph::TRANSITION_REOPEN);
-        $entityManager->flush();
-        self::assertNull($invoice->getCurrencyCode());
-
-        $reloadedEurClient = $entityManager->find(Client::class, $eurClient->getId());
-        self::assertInstanceOf(Client::class, $reloadedEurClient);
-        $invoice->setClient($reloadedEurClient);
-        $entityManager->flush();
-
-        self::assertSame('EUR', $invoice->getCurrency()->getCode());
-
-        $workflow->apply($invoice, Graph::TRANSITION_ACCEPT);
-        $entityManager->flush();
-
-        self::assertSame('EUR', $invoice->getCurrencyCode());
-    }
-
-    /**
-     * An invoice with a payment row retains its frozen currency even when it returns to
-     * Draft, per {@see Invoice::retainsFrozenCurrency()}. The edit form has no currency
-     * field, so the only way to reach the frozen column is a direct write, which the
-     * guard still rejects.
-     */
-    public function testPartiallyPaidInvoiceRetainsItsFrozenCurrencyOnEdit(): void
-    {
-        $client = ClientFactory::createOne(['currencyCode' => 'USD', 'company' => $this->company]);
-        $invoiceId = InvoiceFactory::createOne([
-            'status' => InvoiceStatus::Draft,
-            'client' => $client,
-            'company' => $this->company,
-            'total' => BigInteger::of(10000),
-        ])->getId();
-
-        $container = self::getContainer();
-        $entityManager = $container->get('doctrine')->getManager();
-        self::assertInstanceOf(EntityManagerInterface::class, $entityManager);
-        $entityManager->clear();
-
-        $repository = $container->get(InvoiceRepository::class);
-        $invoice = $repository->find($invoiceId);
-        self::assertInstanceOf(Invoice::class, $invoice);
-
-        $workflow = $container->get('state_machine.invoice');
-        self::assertInstanceOf(WorkflowInterface::class, $workflow);
-        $workflow->apply($invoice, Graph::TRANSITION_ACCEPT);
-        $entityManager->flush();
-
-        self::assertSame('USD', $invoice->getCurrencyCode());
-
-        PaymentFactory::createOne([
-            'invoice' => $invoice,
-            'client' => $client,
-            'company' => $this->company,
-            'totalAmount' => 5000,
-            'currencyCode' => 'USD',
-        ]);
-        $entityManager->flush();
-        $entityManager->clear();
-
-        $invoice = $repository->find($invoiceId);
-        self::assertInstanceOf(Invoice::class, $invoice);
-
-        $workflow->apply($invoice, 'edit');
-        $entityManager->flush();
-
-        self::assertSame('USD', $invoice->getCurrencyCode());
-
-        $invoice->setCurrencyCode('EUR');
-
-        $this->expectException(LogicException::class);
-
-        $entityManager->flush();
-    }
-
-    /**
-     * The same `edit`-from-Pending path as above, but with no payment rows: requirement 1
-     * applies and the currency thaws, so the invoice follows its client again.
-     */
-    public function testEditFromPendingWithNoPaymentsThawsCurrencyCode(): void
-    {
-        $client = ClientFactory::createOne(['currencyCode' => 'USD', 'company' => $this->company]);
-        $invoiceId = InvoiceFactory::createOne([
-            'status' => InvoiceStatus::Draft,
-            'client' => $client,
-            'company' => $this->company,
-        ])->getId();
-
-        $container = self::getContainer();
-        $entityManager = $container->get('doctrine')->getManager();
-        self::assertInstanceOf(EntityManagerInterface::class, $entityManager);
-        $entityManager->clear();
-
-        $repository = $container->get(InvoiceRepository::class);
-        $invoice = $repository->find($invoiceId);
-        self::assertInstanceOf(Invoice::class, $invoice);
-
-        $workflow = $container->get('state_machine.invoice');
-        self::assertInstanceOf(WorkflowInterface::class, $workflow);
-        $workflow->apply($invoice, Graph::TRANSITION_ACCEPT);
-        $entityManager->flush();
-
-        self::assertSame('USD', $invoice->getCurrencyCode());
-
-        $workflow->apply($invoice, 'edit');
-        $entityManager->flush();
-
-        self::assertNull($invoice->getCurrencyCode());
     }
 }

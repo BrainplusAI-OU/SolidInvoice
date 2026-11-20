@@ -61,6 +61,9 @@ return static function (ContainerConfigurator $containerConfigurator, ContainerB
         ->bind('$vault', service('secrets.vault'))
         ->bind('$brandName', env('SOLIDINVOICE_BRAND_NAME'))
         ->bind('$brandLogo', env('SOLIDINVOICE_BRAND_LOGO'))
+        ->bind('$loginBackgroundFile', env('SOLIDINVOICE_LOGIN_BACKGROUND'))
+        ->bind('$loginBackgroundCredit', env('SOLIDINVOICE_LOGIN_BACKGROUND_CREDIT'))
+        ->bind('$loginBackgroundCreditUrl', env('SOLIDINVOICE_LOGIN_BACKGROUND_CREDIT_URL'))
     ;
 
     $services

@@ -30,6 +30,7 @@ use ApiPlatform\OpenApi\Model\MediaType;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Response;
 use ArrayObject;
+use Brick\Math\BigDecimal;
 use Brick\Math\BigInteger;
 use Brick\Math\BigNumber;
 use Brick\Math\Exception\MathException;
@@ -93,8 +94,14 @@ use Symfony\Component\Validator\Constraints as Assert;
         new GetCollection(),
         new Get(),
         new Post(extraProperties: ['idempotent' => true]),
-        new Patch(),
-        new Delete(),
+        new Patch(
+            securityPostDenormalize: '! previous_object.isIssued()',
+            securityPostDenormalizeMessage: 'An issued invoice cannot be changed. Issue a credit note to correct it.',
+        ),
+        new Delete(
+            security: '! object.isIssued()',
+            securityMessage: 'An issued invoice cannot be deleted. Issue a credit note to cancel it.',
+        ),
         new GetCollection(
             uriTemplate: '/clients/{clientId}/invoices',
             uriVariables: [
@@ -288,6 +295,49 @@ class Invoice extends BaseInvoice implements Stringable
     #[ApiProperty(example: ['/api/payments/3fa85f64-5717-4562-b3fc-2c963f66afa6'])]
     private Collection $payments;
 
+    /**
+     * How many units of `exchangeRateCurrency`, the company's own currency, one unit of the
+     * invoice currency was worth on `exchangeRateDate`. Set when an invoice in another currency
+     * is issued, so the tax invoice can state its amounts in the currency the tax is declared in.
+     */
+    #[ORM\Column(name: 'exchange_rate', type: Types::DECIMAL, precision: 20, scale: 8, nullable: true)]
+    #[Groups(['invoice_api:read', 'invoice_api:write'])]
+    #[ApiProperty(example: '32.45670000')]
+    private ?string $exchangeRate = null;
+
+    #[ORM\Column(name: 'exchange_rate_currency', type: Types::STRING, length: 3, nullable: true)]
+    #[Assert\Currency]
+    #[Groups(['invoice_api:read', 'invoice_api:write'])]
+    #[ApiProperty(example: 'THB')]
+    private ?string $exchangeRateCurrency = null;
+
+    #[ORM\Column(name: 'exchange_rate_date', type: Types::DATE_IMMUTABLE, nullable: true)]
+    #[Groups(['invoice_api:read', 'invoice_api:write'])]
+    private ?DateTimeImmutable $exchangeRateDate = null;
+
+    /**
+     * Where the rate came from: ECB when looked up, or whatever the user or API client said.
+     */
+    #[ORM\Column(name: 'exchange_rate_source', type: Types::STRING, length: 32, nullable: true)]
+    #[Assert\Length(max: 32)]
+    #[Groups(['invoice_api:read', 'invoice_api:write'])]
+    #[ApiProperty(example: 'BOT')]
+    private ?string $exchangeRateSource = null;
+
+    /**
+     * @var Collection<int, CreditNote>
+     */
+    #[ORM\OneToMany(targetEntity: CreditNote::class, mappedBy: 'invoice')]
+    #[ORM\OrderBy(['created' => 'ASC'])]
+    private Collection $creditNotes;
+
+    /**
+     * @var Collection<int, WithholdingCertificate>
+     */
+    #[ORM\OneToMany(targetEntity: WithholdingCertificate::class, mappedBy: 'invoice')]
+    #[ORM\OrderBy(['created' => 'ASC'])]
+    private Collection $withholdingCertificates;
+
     #[ORM\OneToOne(targetEntity: Quote::class, inversedBy: 'invoice')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     #[Groups(['invoice_api:read'])]
@@ -333,6 +383,8 @@ class Invoice extends BaseInvoice implements Stringable
         parent::__construct();
 
         $this->payments = new ArrayCollection();
+        $this->creditNotes = new ArrayCollection();
+        $this->withholdingCertificates = new ArrayCollection();
         $this->lines = new ArrayCollection();
         $this->users = new ArrayCollection();
         $this->invoiceTaxes = new ArrayCollection();
@@ -530,9 +582,158 @@ class Invoice extends BaseInvoice implements Stringable
         return $this->payments;
     }
 
+    public function getExchangeRate(): ?string
+    {
+        return $this->exchangeRate;
+    }
+
+    public function setExchangeRate(?string $exchangeRate): self
+    {
+        $this->exchangeRate = $exchangeRate;
+
+        return $this;
+    }
+
+    public function getExchangeRateCurrency(): ?string
+    {
+        return $this->exchangeRateCurrency;
+    }
+
+    public function setExchangeRateCurrency(?string $exchangeRateCurrency): self
+    {
+        $this->exchangeRateCurrency = $exchangeRateCurrency;
+
+        return $this;
+    }
+
+    public function getExchangeRateDate(): ?DateTimeImmutable
+    {
+        return $this->exchangeRateDate;
+    }
+
+    public function setExchangeRateDate(?DateTimeInterface $exchangeRateDate): self
+    {
+        $this->exchangeRateDate = $exchangeRateDate instanceof DateTimeInterface ? DateTimeImmutable::createFromInterface($exchangeRateDate) : null;
+
+        return $this;
+    }
+
+    public function getExchangeRateSource(): ?string
+    {
+        return $this->exchangeRateSource;
+    }
+
+    public function setExchangeRateSource(?string $exchangeRateSource): self
+    {
+        $this->exchangeRateSource = $exchangeRateSource;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, CreditNote>
+     */
+    public function getCreditNotes(): Collection
+    {
+        return $this->creditNotes;
+    }
+
+    public function addCreditNote(CreditNote $creditNote): self
+    {
+        if (! $this->creditNotes->contains($creditNote)) {
+            $this->creditNotes->add($creditNote);
+        }
+
+        return $this;
+    }
+
+    /**
+     * What the credit notes take off the total, tax included.
+     */
+    public function getCreditedTotal(): BigInteger
+    {
+        $credited = BigInteger::zero();
+
+        foreach ($this->creditNotes as $creditNote) {
+            $credited = $credited->plus($creditNote->getTotal());
+        }
+
+        return $credited;
+    }
+
+    /**
+     * @return Collection<int, WithholdingCertificate>
+     */
+    public function getWithholdingCertificates(): Collection
+    {
+        return $this->withholdingCertificates;
+    }
+
+    public function addWithholdingCertificate(WithholdingCertificate $certificate): self
+    {
+        if (! $this->withholdingCertificates->contains($certificate)) {
+            $this->withholdingCertificates->add($certificate);
+        }
+
+        return $this;
+    }
+
+    /**
+     * The tax the client withheld and has certified (a Thai 50 ทวิ, say): it settles that part of
+     * the invoice as a payment would.
+     */
+    public function getCertifiedWithholding(): BigInteger
+    {
+        $certified = BigInteger::zero();
+
+        foreach ($this->withholdingCertificates as $certificate) {
+            $certified = $certified->plus($certificate->getAmount());
+        }
+
+        return $certified;
+    }
+
+    /**
+     * What the client still has to settle with payments: the total, less credit notes and certified withholding.
+     */
+    public function getAmountOwed(): BigDecimal
+    {
+        return $this->getTotal()->toBigDecimal()->minus($this->getCreditedTotal())->minus($this->getCertifiedWithholding());
+    }
+
+    /**
+     * What the credit notes take off the value before tax.
+     */
+    public function getCreditedAmount(): BigInteger
+    {
+        $credited = BigInteger::zero();
+
+        foreach ($this->creditNotes as $creditNote) {
+            $credited = $credited->plus($creditNote->getAmount());
+        }
+
+        return $credited;
+    }
+
     public function retainsFrozenCurrency(): bool
     {
         return ! $this->payments->isEmpty();
+    }
+
+    /**
+     * Whether the invoice has been issued to the client. An issued invoice is a legal document:
+     * it cannot be edited, sent back to draft, reopened or deleted, only corrected by a credit note.
+     * A cancelled or archived invoice counts as issued when its currency was frozen on issue
+     * ({@see \SolidInvoice\CoreBundle\Listener\FreezeCurrencyListener}); one cancelled while
+     * still a draft never was.
+     */
+    public function isIssued(): bool
+    {
+        return match ($this->getStatus()) {
+            InvoiceStatus::Pending, InvoiceStatus::Overdue, InvoiceStatus::Paid => true,
+            InvoiceStatus::Cancelled, InvoiceStatus::Archived => $this->getCurrencyCode() !== null,
+            default => false,
+        };
     }
 
     public function getQuote(): ?Quote

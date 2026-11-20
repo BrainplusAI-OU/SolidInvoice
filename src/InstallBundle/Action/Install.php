@@ -16,6 +16,7 @@ namespace SolidInvoice\InstallBundle\Action;
 use const JSON_THROW_ON_ERROR;
 use DateTimeInterface;
 use Generator;
+use SolidInvoice\CoreBundle\Branding\Brand;
 use SolidInvoice\CoreBundle\ConfigWriter;
 use SolidInvoice\CoreBundle\Telemetry\Telemetry;
 use SolidInvoice\CoreBundle\Telemetry\TelemetryEvent;
@@ -56,6 +57,7 @@ final class Install extends AbstractController
         private readonly UserRepository $userRepository,
         private readonly Security $security,
         private readonly Telemetry $telemetry,
+        private readonly Brand $brand,
         private readonly ?string $installed,
     ) {
     }
@@ -67,7 +69,7 @@ final class Install extends AbstractController
         }
 
         /** @var FormFlowInterface $form */
-        $form = $this->createForm(InstallationType::class, new Installation())
+        $form = $this->createForm(InstallationType::class, Installation::withDefaults($this->brand))
             ->handleRequest($request);
 
         if ($request->query->has('action') && $request->query->has('token')) {

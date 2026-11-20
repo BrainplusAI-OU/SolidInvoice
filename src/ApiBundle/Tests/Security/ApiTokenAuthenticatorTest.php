@@ -187,6 +187,27 @@ final class ApiTokenAuthenticatorTest extends TestCase
         self::assertSame($company->getId()->toHex(), $filter->getParameter('companyId'));
     }
 
+    public function testOnAuthenticationSuccessRecordsARequestWithoutAUserAgent(): void
+    {
+        $historyRepository = $this->createMock(ApiTokenHistoryRepository::class);
+        $historyRepository->expects($this->once())
+            ->method('addHistory')
+            ->with(self::callback(static fn (ApiTokenHistory $history): bool => '' === $history->getUserAgent()), 'a-valid-token');
+
+        $registry = $this->createStub(ManagerRegistry::class);
+        $registry->method('getRepository')->willReturn($historyRepository);
+
+        $apiTokenRepository = $this->createStub(ApiTokenRepository::class);
+        $apiTokenRepository->method('findOneByPlaintext')->willReturn(null);
+
+        $request = new Request(server: ['REMOTE_ADDR' => '127.0.0.1']);
+        $request->headers->set('X-API-TOKEN', 'a-valid-token');
+
+        $authenticator = $this->authenticator(registry: $registry, apiTokenRepository: $apiTokenRepository);
+
+        self::assertNull($authenticator->onAuthenticationSuccess($request, $this->createStub(TokenInterface::class), 'api'));
+    }
+
     /**
      * @return iterable<string, array{string}>
      */

@@ -43,6 +43,9 @@ class Generator
             'margin_header' => 10,
             'margin_footer' => 10,
             'default_font' => 'helvetica',
+            // Without these, text in a script the default font lacks (Thai, for one) prints as empty boxes.
+            'autoScriptToLang' => true,
+            'autoLangToFont' => true,
         ]);
 
         $mpdf->allow_charset_conversion = false;

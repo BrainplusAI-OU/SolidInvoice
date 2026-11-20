@@ -68,6 +68,14 @@ final readonly class Edit
             return new RedirectResponse($this->router->generate('_invoices_index'));
         }
 
+        if ($invoice->isIssued()) {
+            $session = $request->getSession();
+            assert($session instanceof Session);
+            $session->getFlashBag()->add('warning', 'invoice.edit.issued');
+
+            return new RedirectResponse($this->router->generate('_invoices_view', ['id' => $invoice->getId()]));
+        }
+
         $client = $invoice->getClient();
         if (! $client instanceof Client) {
             $session = $request->getSession();

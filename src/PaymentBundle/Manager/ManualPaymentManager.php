@@ -228,7 +228,8 @@ final class ManualPaymentManager
         $paidAfter = BigDecimal::zero();
 
         if ($invoice instanceof Invoice) {
-            $total = $invoice->getTotal();
+            // What the client owes: credit notes and certified withholding lower it.
+            $total = $invoice->getAmountOwed();
             $paidBefore = $this->paymentRepository()->getTotalPaidForInvoice($invoice);
             $paidAfter = $paidBefore->toBigDecimal()->minus($amount);
             $wasPaid = $invoice->getStatus() === InvoiceStatus::Paid;
@@ -264,9 +265,10 @@ final class ManualPaymentManager
             return $payment;
         }
 
-        $invoice->setBalance($invoice->getTotal()->toBigDecimal()->minus($paidAfter));
+        $owed = $invoice->getAmountOwed();
+        $invoice->setBalance($owed->minus($paidAfter));
 
-        if ($wasPaid && $paidAfter->isLessThan($invoice->getTotal())) {
+        if ($wasPaid && $paidAfter->isLessThan($owed)) {
             $invoice->setPaidDate(null);
 
             // No "entered" events: the invoice is not newly pending or overdue as far as anyone who was

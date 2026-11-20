@@ -35,15 +35,15 @@ final class EditTest extends KernelTestCase
     use EnsureApplicationInstalled;
 
     /**
-     * The money fields scale by the form's `currency` option. A frozen invoice must scale by
-     * its own currency, not by the client's current one: USD has 2 subunits, JPY has 0, so a
+     * The money fields scale by the form's `currency` option. An invoice carrying its own currency
+     * must scale by it, not by the client's current one: USD has 2 subunits, JPY has 0, so a
      * stored 100000 is 1000.00 on the document and must be 1000.00 in the form as well.
      */
     public function testEditFormScalesMoneyByTheInvoiceCurrencyNotTheClientCurrency(): void
     {
         $client = ClientFactory::createOne(['currencyCode' => 'JPY', 'company' => $this->company]);
         $invoiceId = InvoiceFactory::createOne([
-            'status' => InvoiceStatus::Pending,
+            'status' => InvoiceStatus::Draft,
             'client' => $client,
             'company' => $this->company,
             'currencyCode' => 'USD',

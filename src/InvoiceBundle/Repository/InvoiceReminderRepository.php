@@ -42,7 +42,9 @@ class InvoiceReminderRepository extends EntityRepository
     }
 
     /**
-     * Get all reminders sent for an invoice.
+     * Get all reminders sent for an invoice, oldest first.
+     *
+     * Two reminders can share a second; the ULID, which grows with each one, breaks the tie.
      *
      * @return InvoiceReminder[]
      */
@@ -50,7 +52,7 @@ class InvoiceReminderRepository extends EntityRepository
     {
         return $this->findBy(
             ['invoice' => $invoice],
-            ['sentAt' => 'ASC']
+            ['sentAt' => 'ASC', 'id' => 'ASC']
         );
     }
 }

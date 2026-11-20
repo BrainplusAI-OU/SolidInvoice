@@ -127,6 +127,14 @@ class GlobalExtension extends AbstractExtension implements GlobalsInterface
 
             new TwigFunction('white_label', $this->brand->isWhiteLabel(...)),
 
+            new TwigFunction('brand_logo_only', $this->brand->showsLogoOnly(...)),
+
+            new TwigFunction('login_background', $this->brand->getLoginBackground(...)),
+
+            new TwigFunction('login_background_credit', $this->brand->getLoginBackgroundCredit(...)),
+
+            new TwigFunction('login_background_credit_url', $this->brand->getLoginBackgroundCreditUrl(...)),
+
             new TwigFunction('company_name', function (): string {
                 if ($this->companySelector->getCompany() instanceof Ulid) {
                     return $this->systemConfig->get('system/company/company_name') ?? $this->brand->getName();

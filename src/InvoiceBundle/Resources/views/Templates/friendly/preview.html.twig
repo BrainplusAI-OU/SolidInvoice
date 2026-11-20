@@ -17,7 +17,7 @@
                     <div class="fs-5 fw-bold mt-2">{{ company_name() }}</div>
                 </div>
                 <div class="text-end">
-                    <div class="text-uppercase small" style="color: #94704a; letter-spacing: 2px;">{{ 'invoice.pdf.title'|trans }}</div>
+                    <div class="text-uppercase small" style="color: #94704a; letter-spacing: 2px;">{{ invoice_title_key(invoice)|trans }}</div>
                     <div class="fs-3 fw-bold">#{{ invoice.invoiceId }}</div>
                 </div>
             </div>

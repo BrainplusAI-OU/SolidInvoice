@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace SolidInvoice\InstallBundle\Twig\Components;
 
 use SolidInvoice\AppRequirements;
+use SolidInvoice\CoreBundle\Branding\Brand;
 use SolidInvoice\InstallBundle\DTO\Installation;
 use SolidInvoice\InstallBundle\Form\Type\InstallationType;
 use SolidInvoice\InstallBundle\Step\InstallationStepInterface;
@@ -51,6 +52,7 @@ class SystemInstallation extends AbstractController
         #[Autowire(param: 'kernel.logs_dir')]
         private readonly string $logsDir,
         private readonly AppRequirements $requirements,
+        private readonly Brand $brand,
     ) {
     }
 
@@ -59,7 +61,7 @@ class SystemInstallation extends AbstractController
      */
     protected function instantiateForm(): FormInterface
     {
-        $form = $this->createForm(InstallationType::class, new Installation());
+        $form = $this->createForm(InstallationType::class, Installation::withDefaults($this->brand));
         assert($form instanceof FormFlowInterface);
         return $form->getStepForm();
     }
