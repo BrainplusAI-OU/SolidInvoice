@@ -1,0 +1,33 @@
+{#
+ # This file is part of SolidInvoice package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+{#
+ # "Add from the catalog", beside "Add item" in a line editor. Each choice calls the
+ # component's addCatalogItem action; see FillsLinesFromCatalog.
+ #}
+{% if catalogItems is not empty %}
+    <div class="dropdown d-inline-block catalog-line-picker">
+        <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+            {{ ux_icon('tabler:package', {width: 16, height: 16}) }}
+            {{ 'catalog.line.add'|trans }}
+        </button>
+        <div class="dropdown-menu catalog-line-picker-menu">
+            {% for catalogItem in catalogItems %}
+                <button type="button" class="dropdown-item"
+                        data-action="live#action:prevent"
+                        data-live-action-param="addCatalogItem"
+                        data-live-item-param="{{ catalogItem.id }}">
+                    <span class="catalog-line-picker-name">{{ catalogItem.name }}</span>
+                    {% if not catalogItem.price.isZero %}
+                        <span class="text-muted ms-2">{{ catalogItem.price|formatCurrency(catalogItem.currency) }}</span>
+                    {% endif %}
+                </button>
+            {% endfor %}
+        </div>
+    </div>
+{% endif %}

@@ -24,6 +24,7 @@ use Nelmio\CorsBundle\NelmioCorsBundle;
 use Payum\Bundle\PayumBundle\PayumBundle;
 use Sentry\SentryBundle\SentryBundle;
 use SolidInvoice\ApiBundle\SolidInvoiceApiBundle;
+use SolidInvoice\CatalogBundle\SolidInvoiceCatalogBundle;
 use SolidInvoice\ClientBundle\SolidInvoiceClientBundle;
 use SolidInvoice\CoreBundle\SolidInvoiceCoreBundle;
 use SolidInvoice\CronBundle\SolidInvoiceCronBundle;
@@ -82,6 +83,7 @@ return [
     SolidInvoiceDashboardBundle::class => ['all' => true],
     SolidInvoiceDataGridBundle::class => ['all' => true],
     SolidInvoiceExpenseBundle::class => ['all' => true],
+    SolidInvoiceCatalogBundle::class => ['all' => true],
     SolidInvoiceFormBundle::class => ['all' => true],
     SolidInvoiceInstallBundle::class => ['all' => true],
     SolidInvoiceInvoiceBundle::class => ['all' => true],

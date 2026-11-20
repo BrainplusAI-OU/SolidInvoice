@@ -40,6 +40,9 @@ return static function (RoutingConfigurator $routingConfigurator): void {
     $routingConfigurator->import('@SolidInvoiceExpenseBundle/Resources/config/routing.php')
         ->prefix('/expenses');
 
+    $routingConfigurator->import('@SolidInvoiceCatalogBundle/Resources/config/routing.php')
+        ->prefix('/items');
+
     $routingConfigurator->import('@SolidInvoiceTaxBundle/Resources/config/routing.php')
         ->prefix('/tax');
 
