@@ -1392,6 +1392,7 @@ menu:
         system: System
         tax: 'Tax Rates'
         users: Users
+    workspace: Workspace
 notification:
     flash:
         added: 'Integration added'

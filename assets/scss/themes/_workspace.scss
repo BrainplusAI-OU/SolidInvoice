@@ -366,6 +366,344 @@ h1, h2, h3, h4, h5, h6,
     }
 }
 
+// ----------------------------------------------------------------------------
+// 2b. Navigation drawer, Twenty layout (CoreBundle Layout/default.html.twig)
+// ----------------------------------------------------------------------------
+// Values follow Twenty's navigation drawer: 28px rows, 16px icons, 13px labels,
+// an 11px section label, sub-items hanging off a hairline. Below lg the same
+// drawer slides over the page (Bootstrap .offcanvas-lg) behind a slim top bar.
+
+.ws-sidebar {
+    > .container-fluid {
+        padding: 0;
+        flex-wrap: nowrap;
+    }
+
+    @media (width < 992px) {
+        position: sticky;
+        top: 0;
+        z-index: 1030;
+        width: 100% !important;
+        min-height: 0;
+        padding: 0;
+        border-bottom: 1px solid var(--ws-border);
+    }
+}
+
+.ws-icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    border: 0;
+    border-radius: var(--ws-radius-sm);
+    background: transparent;
+    color: var(--ws-text-secondary);
+
+    &:hover {
+        background-color: var(--ws-hover);
+        color: var(--ws-text);
+    }
+
+    &:focus-visible {
+        outline: none;
+        box-shadow: var(--tblr-ring-primary);
+    }
+}
+
+// Workspace row: square logo + name on one line.
+
+.ws-workspace {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+    flex: 1 1 auto;
+    height: 2.25rem;
+    padding: 0 0.375rem;
+    border-radius: var(--ws-radius-sm);
+    color: var(--ws-text) !important;
+
+    &:hover {
+        background-color: var(--ws-hover);
+    }
+}
+
+.ws-workspace-logo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    overflow: hidden;
+    border-radius: var(--ws-radius-sm);
+
+    img,
+    .navbar-brand-image {
+        width: 100% !important;
+        height: 100% !important;
+        margin: 0 !important;
+        object-fit: contain;
+    }
+}
+
+.ws-workspace-name {
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.25rem;
+}
+
+// Mobile top bar.
+
+.ws-mobile-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    width: 100%;
+    min-height: 3rem;
+    padding: 0.375rem 0.5rem;
+    background-color: var(--ws-frame);
+
+    .ws-mobile-actions {
+        margin-left: auto;
+        align-items: center;
+        gap: 0.25rem;
+        flex-shrink: 0;
+
+        .nav-item.mx-4 {
+            margin: 0 !important;
+        }
+
+        // The company switcher moves into the drawer; "Create" keeps only its icon.
+        .ws-company-switcher {
+            display: none;
+        }
+
+        .ws-create .btn {
+            width: 2rem;
+            height: 2rem;
+            padding: 0;
+            justify-content: center;
+
+            &::after {
+                display: none;
+            }
+
+            svg {
+                margin: 0 !important;
+            }
+        }
+
+        .ws-create-label {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip-path: inset(50%);
+            white-space: nowrap;
+        }
+    }
+}
+
+// The drawer itself.
+
+.ws-drawer {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--ws-frame);
+
+    @media (width < 992px) {
+        width: min(85vw, 18rem) !important;
+        padding: 0.5rem;
+        border-right: 1px solid var(--ws-border) !important;
+    }
+
+    @media (width >= 992px) {
+        width: 100%;
+        height: 100%;
+        padding: 0.5rem 0.5rem 1rem;
+    }
+}
+
+.ws-drawer-head {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin-bottom: 0.75rem;
+}
+
+.ws-drawer-switcher {
+    margin-bottom: 0.75rem;
+
+    .ws-company-switcher,
+    .ws-company-switcher .btn {
+        width: 100%;
+        justify-content: space-between;
+    }
+}
+
+// Tabler underlines the active top-level link; Twenty marks it with the row fill alone.
+.ws-sidebar .nav-link::after,
+.ws-sidebar .nav-item.active > .nav-link::after,
+.ws-sidebar .nav-item.active::after,
+.ws-sidebar .nav-item::after {
+    display: none !important;
+}
+
+.ws-drawer-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+
+    .navbar-nav {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding: 0 !important;
+        margin: 0;
+    }
+}
+
+.ws-section-label {
+    padding: 0.25rem 0.5rem;
+    margin-bottom: 0.125rem;
+    color: var(--ws-text-tertiary);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    line-height: 1rem;
+}
+
+// Section row: the link fills the row, "+" appears on hover (always on touch).
+
+.ws-section {
+    list-style: none;
+}
+
+.ws-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    border-radius: var(--ws-radius-sm);
+
+    > .nav-link {
+        flex: 1 1 auto;
+        min-width: 0;
+        background: transparent !important;
+    }
+
+    &:hover {
+        background-color: var(--ws-hover);
+    }
+
+    &.is-current,
+    &.is-current:hover {
+        background-color: var(--ws-active);
+
+        > .nav-link,
+        .nav-link-icon {
+            color: var(--ws-text) !important;
+        }
+    }
+}
+
+.ws-row-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    margin-right: 0.125rem;
+    border-radius: var(--ws-radius-sm);
+    color: var(--ws-text-tertiary);
+    opacity: 0;
+    transition: opacity 0.1s ease-out;
+
+    svg {
+        width: 0.875rem;
+        height: 0.875rem;
+    }
+
+    &:hover {
+        background-color: var(--ws-active);
+        color: var(--ws-text);
+    }
+
+    &:focus-visible {
+        opacity: 1;
+        outline: none;
+        box-shadow: var(--tblr-ring-primary);
+    }
+
+    .ws-row:hover &,
+    .ws-row.is-current & {
+        opacity: 1;
+    }
+
+    @media (hover: none) {
+        opacity: 1;
+    }
+}
+
+.ws-sublist {
+    list-style: none;
+    margin: 2px 0 2px 1rem;
+    padding: 0 0 0 0.5rem;
+    border-left: 1px solid var(--ws-border);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.ws-subitem {
+    display: flex;
+    align-items: center;
+    min-height: var(--ws-nav-item-height);
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--ws-radius-sm);
+    color: var(--ws-text-secondary);
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
+    text-decoration: none;
+
+    &:hover {
+        background-color: var(--ws-hover);
+        color: var(--ws-text);
+        text-decoration: none;
+    }
+
+    &.is-current {
+        background-color: var(--ws-active);
+        color: var(--ws-text);
+        font-weight: 500;
+    }
+}
+
+// Every nav-link icon shows at every width (the platform hides them at md).
+
+.ws-sidebar .nav-link-icon {
+    display: inline-block !important;
+}
+
+// Nothing in the page may widen it past the phone screen: the panel clips at
+// every width, as it already did on desktop.
+
+@media (width < 992px) {
+    .page-wrapper {
+        overflow-x: clip;
+    }
+}
+
 // ============================================================================
 // 3. TOP BAR AND PAGE PANEL
 // ============================================================================

@@ -50,14 +50,60 @@
     {% endif %}
 {% endblock footer %}
 
+{#
+ # Navigation laid out like Twenty's drawer: a compact workspace row, a section label, one row
+ # per section (see templates/bundles/SolidWorxPlatformBundle/Menu/menu.html.twig).
+ #
+ # Below the lg breakpoint the sidebar is a slim top bar (menu button, workspace, create, user)
+ # and the navigation slides in from the left over the page, with a backdrop, instead of
+ # unfolding inline and pushing the page down. Above it, the same drawer is the fixed sidebar.
+ #}
+{% block sidebar %}
+    <aside class="navbar navbar-vertical navbar-expand-lg ws-sidebar">
+        <div class="container-fluid">
+            <div class="ws-mobile-bar d-lg-none">
+                <button class="ws-icon-button" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar-menu" aria-controls="sidebar-menu" aria-label="{{ 'Toggle navigation'|trans }}">
+                    {{ ux_icon('tabler:menu-2', {width: 20, height: 20}) }}
+                </button>
+                <a href="{{ path('_dashboard') }}" class="ws-workspace ws-workspace--bar text-decoration-none">
+                    <span class="ws-workspace-logo">{{ app_logo(showDefault: true) }}</span>
+                    <span class="ws-workspace-name">{{ company_name() }}</span>
+                </a>
+                <div class="ws-mobile-actions navbar-nav flex-row">
+                    {{ block('user_menu') }}
+                </div>
+            </div>
+
+            <div class="offcanvas-lg offcanvas-start ws-drawer" tabindex="-1" id="sidebar-menu" aria-label="{{ company_name() }}">
+                <div class="ws-drawer-head">
+                    {{ block('sidebar_brand') }}
+                    <button type="button" class="ws-icon-button d-lg-none" data-bs-dismiss="offcanvas" data-bs-target="#sidebar-menu" aria-label="{{ 'Close'|trans }}">
+                        {{ ux_icon('tabler:x', {width: 18, height: 18}) }}
+                    </button>
+                </div>
+
+                {# Switching company lives in the drawer on phones; the top bar keeps create and the user. #}
+                <div class="ws-drawer-switcher d-lg-none navbar-nav">
+                    {% include '@SolidInvoiceCore/Menu/company_switcher.html.twig' %}
+                    {{ block('workspace_switcher') }}
+                </div>
+
+                <div class="ws-drawer-body">
+                    <div class="ws-section-label">{{ 'menu.workspace'|trans }}</div>
+                    {% if menu_exists('sidebar') %}
+                        {{ render_menu('sidebar', {ws_sections: true, root_class: 'navbar-nav'}) }}
+                    {% endif %}
+                    {{ block('sidebar_footer') }}
+                </div>
+            </div>
+        </div>
+    </aside>
+{% endblock sidebar %}
+
 {% block sidebar_brand %}
-    <div class="navbar-brand">
-        {# Logo above the name: beside it, a long company name wrapped one word per line. #}
-        <a href="{{ path('_dashboard') }}" aria-label="{{ company_name() }}" class="sidebar-brand-stacked d-flex flex-column align-items-center text-center text-decoration-none link-white">
-            {{ app_logo(showDefault: true) }}
-            <span class="d-block fs-5 fw-medium text-wrap lh-sm px-2 mt-1">
-                {{ company_name() }}
-            </span>
-        </a>
-    </div>
+    {# Twenty's workspace row: a small square logo and the name on one line, truncated. #}
+    <a href="{{ path('_dashboard') }}" class="ws-workspace text-decoration-none" title="{{ company_name() }}">
+        <span class="ws-workspace-logo">{{ app_logo(showDefault: true) }}</span>
+        <span class="ws-workspace-name">{{ company_name() }}</span>
+    </a>
 {% endblock sidebar_brand %}
