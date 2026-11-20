@@ -30,6 +30,7 @@ use ApiPlatform\OpenApi\Model\MediaType;
 use ApiPlatform\OpenApi\Model\Operation;
 use ApiPlatform\OpenApi\Model\Response;
 use ArrayObject;
+use Brick\Math\BigDecimal;
 use Brick\Math\BigInteger;
 use Brick\Math\BigNumber;
 use Brick\Math\Exception\MathException;
@@ -330,6 +331,13 @@ class Invoice extends BaseInvoice implements Stringable
     #[ORM\OrderBy(['created' => 'ASC'])]
     private Collection $creditNotes;
 
+    /**
+     * @var Collection<int, WithholdingCertificate>
+     */
+    #[ORM\OneToMany(targetEntity: WithholdingCertificate::class, mappedBy: 'invoice')]
+    #[ORM\OrderBy(['created' => 'ASC'])]
+    private Collection $withholdingCertificates;
+
     #[ORM\OneToOne(targetEntity: Quote::class, inversedBy: 'invoice')]
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     #[Groups(['invoice_api:read'])]
@@ -376,6 +384,7 @@ class Invoice extends BaseInvoice implements Stringable
 
         $this->payments = new ArrayCollection();
         $this->creditNotes = new ArrayCollection();
+        $this->withholdingCertificates = new ArrayCollection();
         $this->lines = new ArrayCollection();
         $this->users = new ArrayCollection();
         $this->invoiceTaxes = new ArrayCollection();
@@ -650,6 +659,46 @@ class Invoice extends BaseInvoice implements Stringable
         }
 
         return $credited;
+    }
+
+    /**
+     * @return Collection<int, WithholdingCertificate>
+     */
+    public function getWithholdingCertificates(): Collection
+    {
+        return $this->withholdingCertificates;
+    }
+
+    public function addWithholdingCertificate(WithholdingCertificate $certificate): self
+    {
+        if (! $this->withholdingCertificates->contains($certificate)) {
+            $this->withholdingCertificates->add($certificate);
+        }
+
+        return $this;
+    }
+
+    /**
+     * The tax the client withheld and has certified (a Thai 50 ทวิ, say): it settles that part of
+     * the invoice as a payment would.
+     */
+    public function getCertifiedWithholding(): BigInteger
+    {
+        $certified = BigInteger::zero();
+
+        foreach ($this->withholdingCertificates as $certificate) {
+            $certified = $certified->plus($certificate->getAmount());
+        }
+
+        return $certified;
+    }
+
+    /**
+     * What the client still has to settle with payments: the total, less credit notes and certified withholding.
+     */
+    public function getAmountOwed(): BigDecimal
+    {
+        return $this->getTotal()->toBigDecimal()->minus($this->getCreditedTotal())->minus($this->getCertifiedWithholding());
     }
 
     /**

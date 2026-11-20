@@ -49,10 +49,7 @@ class TotalCalculator
 
         if ($entity instanceof Invoice) {
             $totalPaid = $this->paymentRepository->getTotalPaidForInvoice($entity);
-            $total = $entity->getTotal();
-            assert($total instanceof BigDecimal || $total instanceof BigInteger);
-
-            $entity->setBalance($total->minus($totalPaid)->minus($entity->getCreditedTotal()));
+            $entity->setBalance($entity->getAmountOwed()->minus($totalPaid));
         }
     }
 

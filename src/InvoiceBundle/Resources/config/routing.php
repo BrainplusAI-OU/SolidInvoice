@@ -20,6 +20,7 @@ use SolidInvoice\InvoiceBundle\Action\EditRecurring;
 use SolidInvoice\InvoiceBundle\Action\Fields;
 use SolidInvoice\InvoiceBundle\Action\Index;
 use SolidInvoice\InvoiceBundle\Action\IssueCreditNote;
+use SolidInvoice\InvoiceBundle\Action\RecordWithholdingCertificate;
 use SolidInvoice\InvoiceBundle\Action\RecurringIndex;
 use SolidInvoice\InvoiceBundle\Action\RecurringTransition;
 use SolidInvoice\InvoiceBundle\Action\SendManualReminder;
@@ -29,6 +30,7 @@ use SolidInvoice\InvoiceBundle\Action\Transition\Send;
 use SolidInvoice\InvoiceBundle\Action\View;
 use SolidInvoice\InvoiceBundle\Action\ViewCreditNote;
 use SolidInvoice\InvoiceBundle\Action\ViewRecurring;
+use SolidInvoice\InvoiceBundle\Action\WithholdingCertificateFile;
 use Symfony\Component\Routing\Loader\Configurator\RoutingConfigurator;
 
 return static function (RoutingConfigurator $routingConfigurator): void {
@@ -62,6 +64,16 @@ return static function (RoutingConfigurator $routingConfigurator): void {
     $routingConfigurator
         ->add('_credit_notes_view', '/credit-notes/{id}.pdf')
         ->controller(ViewCreditNote::class)
+        ->methods(['GET']);
+
+    $routingConfigurator
+        ->add('_invoices_withholding_certificate', '/withholding-certificate/{id}')
+        ->controller(RecordWithholdingCertificate::class)
+        ->methods(['GET', 'POST']);
+
+    $routingConfigurator
+        ->add('_withholding_certificates_file', '/withholding-certificates/{id}/file')
+        ->controller(WithholdingCertificateFile::class)
         ->methods(['GET']);
 
     $routingConfigurator

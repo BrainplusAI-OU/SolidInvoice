@@ -2673,3 +2673,24 @@ users:
         active_users: 'Active Users'
         pending_invitations: 'Pending Invitations'
     title: Users
+withholding_certificate:
+    error:
+        amount_out_of_range: 'The amount must be above zero and at most the tax withheld that no certificate covers yet.'
+        not_certifiable: 'This invoice has no withheld tax left to certify: it has not been issued, has been cancelled, or every certificate is already recorded.'
+        number_required: 'Give the certificate number, in at most 64 characters.'
+    flash:
+        recorded: 'Withholding tax certificate %number% recorded.'
+    form:
+        amount: 'Tax withheld'
+        amount_help: 'As written on the certificate. It settles that part of the invoice.'
+        date: 'Date of the certificate'
+        file: 'Scanned certificate'
+        file_help: 'Optional. PDF or image, up to 10 MB. Keep it: it lets you deduct the tax from your own.'
+        number: 'Certificate number'
+        number_help: 'Book and number, as the client wrote them.'
+    record: 'Record a withholding tax certificate'
+    record_subtitle: 'The client withheld tax from invoice #%invoice% and paid it to the Revenue Department.'
+    view:
+        download: 'Open the certificate'
+        no_file: 'No scan attached'
+        title: 'Withholding tax certificates'

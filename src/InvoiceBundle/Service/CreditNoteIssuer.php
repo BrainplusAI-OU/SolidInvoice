@@ -13,24 +13,18 @@ declare(strict_types=1);
 
 namespace SolidInvoice\InvoiceBundle\Service;
 
-use Brick\Math\BigDecimal;
 use Brick\Math\BigInteger;
 use Brick\Math\BigNumber;
 use Brick\Math\RoundingMode;
 use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use ReflectionClass;
-use SolidInvoice\ClientBundle\Entity\Client;
-use SolidInvoice\ClientBundle\Repository\CreditRepository;
 use SolidInvoice\CoreBundle\Billing\TotalCalculator;
 use SolidInvoice\CoreBundle\Generator\BillingIdGenerator\AutoIncrementIdGenerator;
 use SolidInvoice\InvoiceBundle\Entity\CreditNote;
 use SolidInvoice\InvoiceBundle\Entity\Invoice;
 use SolidInvoice\InvoiceBundle\Enum\InvoiceStatus;
 use SolidInvoice\InvoiceBundle\Exception\CreditNoteException;
-use SolidInvoice\InvoiceBundle\Model\Graph;
-use SolidInvoice\PaymentBundle\Repository\PaymentRepository;
-use Symfony\Component\Workflow\WorkflowInterface;
 
 /**
  * Issues a credit note against an issued invoice and settles what it changes.
@@ -39,9 +33,7 @@ use Symfony\Component\Workflow\WorkflowInterface;
  * proportion; the credit note that brings the invoice to zero takes what is left of them, so
  * rounding never leaves a cent of tax behind.
  *
- * Afterwards the invoice owes less. One credited in full and never paid is cancelled. One whose
- * payments now cover what it owes is marked paid, and what the client paid beyond that becomes
- * the client's credit, as it does for any overpayment.
+ * Afterwards the invoice owes less, and {@see InvoiceSettlement} brings its status in line.
  *
  * @see \SolidInvoice\InvoiceBundle\Tests\Service\CreditNoteIssuerTest
  */
@@ -54,10 +46,8 @@ final readonly class CreditNoteIssuer
     public function __construct(
         private EntityManagerInterface $entityManager,
         private TotalCalculator $totalCalculator,
-        private PaymentRepository $paymentRepository,
-        private CreditRepository $creditRepository,
+        private InvoiceSettlement $settlement,
         private AutoIncrementIdGenerator $numberGenerator,
-        private WorkflowInterface $invoiceStateMachine,
     ) {
     }
 
@@ -94,8 +84,8 @@ final readonly class CreditNoteIssuer
             throw new CreditNoteException('credit_note.error.amount_out_of_range');
         }
 
-        $paid = $this->paymentRepository->getTotalPaidForInvoice($invoice)->toBigDecimal();
-        $excessBefore = $this->excess($paid, $invoice);
+        $paid = $this->settlement->paid($invoice);
+        $excessBefore = $this->settlement->excess($paid, $invoice);
 
         $creditNote = new CreditNote(
             $invoice,
@@ -113,38 +103,11 @@ final readonly class CreditNoteIssuer
         $invoice->addCreditNote($creditNote);
         $this->totalCalculator->calculateTotals($invoice);
 
-        $this->settle($invoice, $paid, $excessBefore);
+        $this->settlement->settle($invoice, $paid, $excessBefore);
 
         $this->entityManager->flush();
 
         return $creditNote;
-    }
-
-    private function settle(Invoice $invoice, BigDecimal $paid, BigDecimal $excessBefore): void
-    {
-        if ($invoice->getStatus() === InvoiceStatus::Paid) {
-            // Already settled: what the client paid beyond the new amount owed is theirs.
-            $refund = $this->excess($paid, $invoice)->minus($excessBefore);
-            $client = $invoice->getClient();
-
-            if ($refund->isPositive() && $client instanceof Client) {
-                $this->creditRepository->addCredit($client, self::whole($refund));
-            }
-
-            return;
-        }
-
-        if ($paid->isZero() && self::creditableAmount($invoice)->isZero()) {
-            $this->invoiceStateMachine->apply($invoice, Graph::TRANSITION_CANCEL);
-
-            return;
-        }
-
-        if ($paid->isPositive() && ! $invoice->getBalance()->isPositive()) {
-            // InvoicePaidListener turns any excess into credit for the client.
-            $invoice->setPaidDate(new DateTimeImmutable());
-            $this->invoiceStateMachine->apply($invoice, Graph::TRANSITION_PAY);
-        }
     }
 
     private static function netTotal(Invoice $invoice): BigInteger
@@ -200,13 +163,6 @@ final readonly class CreditNoteIssuer
         }
 
         return $credited;
-    }
-
-    private function excess(BigDecimal $paid, Invoice $invoice): BigDecimal
-    {
-        $excess = $paid->minus($invoice->getTotal()->toBigDecimal()->minus($invoice->getCreditedTotal()));
-
-        return $excess->isPositive() ? $excess : BigDecimal::zero();
     }
 
     /**

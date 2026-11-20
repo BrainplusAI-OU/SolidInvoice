@@ -307,8 +307,8 @@ class InvoiceRepository extends EntityRepository
      */
     public function isFullyPaid(Invoice $invoice): bool
     {
-        // Credit notes lower what the client owes.
-        $invoiceTotal = $invoice->getTotal()->toBigDecimal()->minus($invoice->getCreditedTotal());
+        // Credit notes and certified withholding lower what the client owes.
+        $invoiceTotal = $invoice->getAmountOwed();
 
         $totalPaid = $this->getEntityManager()
             ->getRepository(Payment::class)

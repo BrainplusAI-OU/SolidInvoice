@@ -63,8 +63,8 @@ class InvoicePaidListener implements EventSubscriberInterface
         $totalPaid = $paymentRepository->getTotalPaidForInvoice($invoice)
             ->toBigDecimal();
 
-        // What the client owes: credit notes lower it.
-        $owed = $invoice->getTotal()->toBigDecimal()->minus($invoice->getCreditedTotal());
+        // What the client owes: credit notes and certified withholding lower it.
+        $owed = $invoice->getAmountOwed();
 
         if ($totalPaid->isGreaterThan($owed)) {
             /** @var Client $client */

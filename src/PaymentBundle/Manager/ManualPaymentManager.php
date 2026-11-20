@@ -228,8 +228,8 @@ final class ManualPaymentManager
         $paidAfter = BigDecimal::zero();
 
         if ($invoice instanceof Invoice) {
-            // What the client owes: credit notes lower it.
-            $total = $invoice->getTotal()->toBigDecimal()->minus($invoice->getCreditedTotal());
+            // What the client owes: credit notes and certified withholding lower it.
+            $total = $invoice->getAmountOwed();
             $paidBefore = $this->paymentRepository()->getTotalPaidForInvoice($invoice);
             $paidAfter = $paidBefore->toBigDecimal()->minus($amount);
             $wasPaid = $invoice->getStatus() === InvoiceStatus::Paid;
@@ -265,7 +265,7 @@ final class ManualPaymentManager
             return $payment;
         }
 
-        $owed = $invoice->getTotal()->toBigDecimal()->minus($invoice->getCreditedTotal());
+        $owed = $invoice->getAmountOwed();
         $invoice->setBalance($owed->minus($paidAfter));
 
         if ($wasPaid && $paidAfter->isLessThan($owed)) {

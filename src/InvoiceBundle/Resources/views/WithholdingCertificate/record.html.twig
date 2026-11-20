@@ -1,0 +1,71 @@
+{#
+ # This file is part of SolidInvoice package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{% extends "@SolidInvoiceCore/Layout/default.html.twig" %}
+
+{% block page_title %}{{ 'withholding_certificate.record'|trans }}{% endblock page_title %}
+
+{% block content %}
+<div class="form-page">
+    {{ form_start(form) }}
+    {{ form_errors(form) }}
+
+    <div class="form-page-container form-page-container--narrow">
+        <div class="form-page-header">
+            <div class="form-page-header-content">
+                <div class="form-page-icon">
+                    {{ ux_icon('tabler:receipt-tax', {width: 28, height: 28}) }}
+                </div>
+                <div>
+                    <h1 class="form-page-title">{{ 'withholding_certificate.record'|trans }}</h1>
+                    <p class="form-page-subtitle">{{ 'withholding_certificate.record_subtitle'|trans({'%invoice%': invoice.invoiceId}) }}</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-page-sections">
+            <section class="form-page-section">
+                <div class="section-content">
+                    <div class="form-grid">
+                        <div class="form-field">
+                            {{ form_row(form.number) }}
+                        </div>
+                        <div class="form-field">
+                            {{ form_row(form.date) }}
+                        </div>
+                        <div class="form-field">
+                            {{ form_row(form.amount) }}
+                        </div>
+                        <div class="form-field form-field-wide">
+                            {{ form_row(form.file) }}
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        {{ form_rest(form) }}
+
+        <div class="form-page-actions">
+            <div class="form-page-actions-inner">
+                <a href="{{ path('_invoices_view', {id: invoice.id}) }}" class="btn btn-ghost">
+                    {{ ux_icon('tabler:arrow-left', {width: 18, height: 18}) }}
+                    {{ 'action.cancel'|trans }}
+                </a>
+                <button type="submit" class="btn btn-primary btn-save">
+                    {{ ux_icon('tabler:receipt-tax', {width: 18, height: 18}) }}
+                    {{ 'withholding_certificate.record'|trans }}
+                </button>
+            </div>
+        </div>
+    </div>
+
+    {{ form_end(form) }}
+</div>
+{% endblock content %}
