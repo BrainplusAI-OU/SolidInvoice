@@ -24,6 +24,8 @@ core:
     image_upload:
         invalid_image: 'The uploaded file is not a valid image.'
         invalid_mime_type: 'The uploaded file must be a JPEG, PNG, GIF or WebP image.'
+credit_note:
+    amount_out_of_range: 'The amount must be above zero and at most what is left to credit on the invoice.'
 document:
     mark_sent:
         channel_email: 'Use the send endpoint to email a document.'
@@ -120,3 +122,6 @@ user:
         accept_terms: 'You must accept the terms and conditions to register'
     turnstile:
         failed: 'Captcha verification failed. Please try again.'
+withholding_certificate:
+    amount_out_of_range: 'The amount must be above zero and at most the tax withheld that no certificate covers yet.'
+    invalid_file_type: 'Only PDF and image files can be attached.'

@@ -35,4 +35,9 @@ final class Graph
     public const string TRANSITION_UNPAY = 'unpay';
 
     public const string TRANSITION_ARCHIVE = 'archive';
+
+    /**
+     * Back to draft, for changes. Blocked once the invoice is issued.
+     */
+    public const string TRANSITION_EDIT = 'edit';
 }

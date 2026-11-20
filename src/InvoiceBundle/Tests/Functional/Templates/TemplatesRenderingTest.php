@@ -16,6 +16,7 @@ namespace SolidInvoice\InvoiceBundle\Tests\Functional\Templates;
 use Brick\Math\BigInteger;
 use Brick\Math\Exception\MathException;
 use Carbon\CarbonImmutable;
+use DateTimeImmutable;
 use Doctrine\ORM\EntityManagerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -144,6 +145,45 @@ final class TemplatesRenderingTest extends KernelTestCase
         $pdf = $generator->generate($html);
         self::assertNotEmpty($pdf);
         self::assertStringStartsWith('%PDF-', $pdf);
+    }
+
+    /**
+     * An invoice in another currency states what it is worth in the company's, at the rate frozen on issue.
+     */
+    public function testAnInvoiceInAnotherCurrencyShowsItsValueInTheCompanyCurrency(): void
+    {
+        $invoice = $this->createFixtureInvoice();
+        $invoice->setExchangeRate('32.50000000')->setExchangeRateCurrency('THB')->setExchangeRateSource('ECB')->setExchangeRateDate(new DateTimeImmutable('2026-11-20'));
+
+        $twig = self::getContainer()->get('twig');
+        self::assertInstanceOf(Environment::class, $twig);
+
+        foreach ([...array_map(static fn (string $slug): string => sprintf('@SolidInvoiceInvoice/Templates/%s/pdf.html.twig', $slug), self::slugs()), '@SolidInvoiceInvoice/Pdf/invoice.html.twig'] as $template) {
+            $html = $twig->render($template, ['invoice' => $invoice]);
+
+            self::assertStringContainsString('1 USD = 32.5000 THB (ECB,', $html, $template);
+            self::assertStringContainsString('Total in THB', $html, $template);
+            // USD 1,500.00 at 32.50.
+            self::assertStringContainsString('48,750.00', $html, $template);
+        }
+    }
+
+    /**
+     * Thai law asks a business that charges VAT for a ใบกำกับภาษี, titled as such in Thai.
+     */
+    #[DataProvider('pdfTemplateProvider')]
+    public function testAThaiCompanyChargingVatIssuesATaxInvoice(string $slug): void
+    {
+        $this->company->setCountry('TH');
+        $invoice = $this->createFixtureInvoice();
+        // In memory only: the fixture lines carry no tax, and a flush would recalculate it away.
+        $invoice->setTax(10500);
+
+        self::assertStringContainsString('ใบกำกับภาษี', $this->renderInvoicePdf($slug, $invoice));
+
+        $invoice->setTax(0);
+
+        self::assertStringNotContainsString('ใบกำกับภาษี', $this->renderInvoicePdf($slug, $invoice));
     }
 
     /**

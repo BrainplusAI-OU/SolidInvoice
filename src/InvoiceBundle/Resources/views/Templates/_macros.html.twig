@@ -231,8 +231,47 @@
                 </td>
             </tr>
         {% endif %}
+        {% import _self as self %}
+        {{ self.exchange_rate_rows(invoice, currency, p) }}
     </table>
 {% endmacro %}
+
+{#
+ # exchange_rate_rows
+ #
+ # What an invoice in another currency is worth in the company's own, at the rate frozen when it
+ # was issued: table rows for a two-column totals table. palette keys: labelColor, mono.
+ #}
+{% macro exchange_rate_rows(invoice, currency, palette={}) %}
+    {% set p = { labelColor: '#475569', mono: "'Courier New', monospace" }|merge(palette) %}
+    {% if invoice.exchangeRate is defined and invoice.exchangeRate is not null and invoice.exchangeRateCurrency is not null %}
+        {% set base = invoice.exchangeRateCurrency %}
+        <tr>
+            <td colspan="2" style="padding: 12px 12px 4px; font-size: 8pt; text-align: right; color: {{ p.labelColor }};">
+                {{ 'invoice.exchange_rate.rate'|trans({'%currency%': currency.code, '%rate%': invoice.exchangeRate|number_format(4), '%base%': base, '%source%': invoice.exchangeRateSource ?? '', '%date%': invoice.exchangeRateDate ? invoice.exchangeRateDate|format_date('medium') : ''}) }}
+            </td>
+        </tr>
+        <tr>
+            <td style="padding: 4px 20px 4px 12px; font-size: 9pt; text-align: right; color: {{ p.labelColor }};">
+                {{ 'invoice.exchange_rate.total'|trans({'%base%': base}) }}
+            </td>
+            <td style="padding: 4px 12px; font-size: 9pt; text-align: right; font-family: {{ p.mono }};">
+                {{ in_exchange_rate_currency(invoice, invoice.total)|formatCurrency(base) }}
+            </td>
+        </tr>
+        {% if invoice.tax.positive %}
+            <tr>
+                <td style="padding: 4px 20px 4px 12px; font-size: 9pt; text-align: right; color: {{ p.labelColor }};">
+                    {{ 'invoice.exchange_rate.tax'|trans({'%base%': base}) }}
+                </td>
+                <td style="padding: 4px 12px; font-size: 9pt; text-align: right; font-family: {{ p.mono }};">
+                    {{ in_exchange_rate_currency(invoice, invoice.tax)|formatCurrency(base) }}
+                </td>
+            </tr>
+        {% endif %}
+    {% endif %}
+{% endmacro %}
+
 
 {% macro terms_block(invoice, palette={}) %}
     {% if invoice.terms is not empty %}

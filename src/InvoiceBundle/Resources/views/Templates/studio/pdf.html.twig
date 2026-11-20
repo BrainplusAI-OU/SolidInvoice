@@ -15,7 +15,7 @@
                 {% if setting('system/company/logo') is not empty %}{{ app_logo(40) }}{% endif %}
             </td>
             <td style="vertical-align: top; text-align: right;">
-                <div style="font-size: 8pt; color: #64748b; letter-spacing: 2px; text-transform: uppercase;">{{ 'invoice.pdf.title'|trans }}</div>
+                <div style="font-size: 8pt; color: #64748b; letter-spacing: 2px; text-transform: uppercase;">{{ invoice_title_key(invoice)|trans }}</div>
                 <div style="font-size: 14pt; font-weight: bold; color: #1e293b;">#{{ invoice.invoiceId }}</div>
             </td>
         </tr>

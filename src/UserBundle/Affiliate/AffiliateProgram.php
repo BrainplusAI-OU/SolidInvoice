@@ -17,6 +17,7 @@ use DateMalformedStringException;
 use DateTimeImmutable;
 use DateTimeInterface;
 use Psr\Clock\ClockInterface;
+use SolidInvoice\CoreBundle\Branding\Brand;
 use SolidInvoice\DashboardBundle\Checklist\ChecklistManager;
 use SolidInvoice\UserBundle\Entity\User;
 use SolidInvoice\UserBundle\Entity\UserSetting;
@@ -49,6 +50,7 @@ final readonly class AffiliateProgram
         private string $yearlyEarnings,
         #[Autowire(env: 'int:SOLIDINVOICE_AFFILIATE_PROMPT_DELAY_DAYS')]
         private int $promptDelayDays,
+        private Brand $brand = new Brand(),
     ) {
     }
 
@@ -60,7 +62,8 @@ final readonly class AffiliateProgram
 
     public function isEnabled(): bool
     {
-        return $this->enabled;
+        // The programme pays commission on SolidInvoice Cloud sign-ups: it has no place on an installation under another brand.
+        return $this->enabled && ! $this->brand->isWhiteLabel();
     }
 
     public function getSignupUrl(): string

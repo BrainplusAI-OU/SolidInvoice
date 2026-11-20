@@ -38,6 +38,8 @@ final class InvoiceTaxType extends AbstractType
         $builder
             ->add('tax', EntityType::class, [
                 'class' => Tax::class,
+                // EntityType turns choice translation off, which would print the TranslatableMessage label raw.
+                'choice_translation_domain' => 'messages',
                 'placeholder' => 'tax.invoice_tax.tax.placeholder',
                 'required' => true,
                 'choice_label' => static function (Tax $tax): TranslatableMessage {

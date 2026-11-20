@@ -92,7 +92,7 @@
         <td class="header-right" style="width: 50%; vertical-align: top; text-align: right;">
             {# Invoice Label #}
             <div class="invoice-label" style="font-size: 10pt; font-weight: 600; color: #64748b; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 4px;">
-                {{ 'invoice.pdf.title'|trans }}
+                {{ invoice_title_key(invoice)|trans }}
             </div>
 
             {# Invoice Number #}
@@ -399,6 +399,7 @@
                 </td>
             </tr>
         {% endif %}
+        {{ inv.exchange_rate_rows(invoice, currency) }}
     </table>
 </div>
 

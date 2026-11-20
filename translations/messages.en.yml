@@ -248,6 +248,38 @@ company:
         welcome_back: 'Welcome Back %name%'
 contact:
     email: Email
+credit_note:
+    error:
+        amount_out_of_range: 'The amount must be above zero and at most what is left to credit on the invoice.'
+        not_creditable: 'This invoice cannot take a credit note: it has not been issued, has been cancelled, or is already credited in full.'
+        reason_required: 'Give the reason for the credit note.'
+    flash:
+        issued: 'Credit note %number% issued.'
+    form:
+        amount: 'Amount to credit, before tax'
+        amount_help: 'Tax and withholding are credited in the same proportion as on the invoice.'
+        date: 'Date of the credit note'
+        reason: Reason
+        reason_help: 'Printed on the credit note, as Thai law requires: a returned item, a price corrected, a discount granted afterwards…'
+    issue: 'Issue a credit note'
+    issue_subtitle: 'Corrects invoice #%invoice%, which can no longer be changed.'
+    pdf:
+        amount: Difference
+        corrected_amount: 'Correct value'
+        date: Date
+        invoice: 'Original invoice'
+        invoice_date: 'Invoice date'
+        original_amount: 'Original value'
+        payable: 'Reduction of the amount payable'
+        reason: 'Reason for the credit note'
+        tax: 'VAT on the difference'
+        title: 'Credit note'
+        title_th: 'Credit note · ใบลดหนี้'
+        total: 'Total credited'
+        withholding: 'Tax no longer withheld'
+    view:
+        download: 'Download PDF'
+        title: 'Credit notes'
 custom_field:
     add: 'Add field'
     badge:
@@ -970,11 +1002,16 @@ invoice:
     custom_fields: 'Custom fields'
     date: 'Invoice Date'
     edit:
+        issued: 'This invoice has been issued and can no longer be changed. Issue a credit note to correct it.'
         paid: "You can't edit invoices that is already paid"
         success: 'Invoice updated successfully'
         title: 'Edit Invoice'
     email:
         send_failed: 'Failed to send invoice email. Please verify your email configuration in Settings.'
+    exchange_rate:
+        rate: '1 %currency% = %rate% %base% (%source%, %date%)'
+        tax: 'VAT in %base%'
+        total: 'Total in %base%'
     external:
         footer:
             cta: 'Send your own invoices free'
@@ -1072,6 +1109,7 @@ invoice:
         payment_description: 'Click the button or visit the URL below to pay securely online.'
         payment_title: 'Pay This Invoice Online'
         payment_url_label: 'Payment URL'
+        tax_invoice_th: 'TAX INVOICE · ใบกำกับภาษี'
         title: INVOICE
     recurring:
         activate_start: 'Activate and Start'
@@ -2635,3 +2673,24 @@ users:
         active_users: 'Active Users'
         pending_invitations: 'Pending Invitations'
     title: Users
+withholding_certificate:
+    error:
+        amount_out_of_range: 'The amount must be above zero and at most the tax withheld that no certificate covers yet.'
+        not_certifiable: 'This invoice has no withheld tax left to certify: it has not been issued, has been cancelled, or every certificate is already recorded.'
+        number_required: 'Give the certificate number, in at most 64 characters.'
+    flash:
+        recorded: 'Withholding tax certificate %number% recorded.'
+    form:
+        amount: 'Tax withheld'
+        amount_help: 'As written on the certificate. It settles that part of the invoice.'
+        date: 'Date of the certificate'
+        file: 'Scanned certificate'
+        file_help: 'Optional. PDF or image, up to 10 MB. Keep it: it lets you deduct the tax from your own.'
+        number: 'Certificate number'
+        number_help: 'Book and number, as the client wrote them.'
+    record: 'Record a withholding tax certificate'
+    record_subtitle: 'The client withheld tax from invoice #%invoice% and paid it to the Revenue Department.'
+    view:
+        download: 'Open the certificate'
+        no_file: 'No scan attached'
+        title: 'Withholding tax certificates'

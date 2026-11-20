@@ -71,9 +71,8 @@ class PaymentCompleteListener implements EventSubscriberInterface
                 $this->invoiceStateMachine->apply($invoice, Graph::TRANSITION_PAY);
             } else {
                 $paymentRepository = $this->registry->getRepository(Payment::class);
-                $invoiceTotal = $invoice->getTotal();
                 $totalPaid = $paymentRepository->getTotalPaidForInvoice($invoice);
-                $invoice->setBalance($invoiceTotal->toBigDecimal()->minus($totalPaid));
+                $invoice->setBalance($invoice->getAmountOwed()->minus($totalPaid));
 
                 $em = $this->registry->getManager();
                 $em->persist($invoice);

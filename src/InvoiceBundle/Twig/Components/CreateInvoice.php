@@ -234,6 +234,12 @@ final class CreateInvoice extends AbstractController
         if ($this->isEdit) {
             assert($this->invoice instanceof Invoice);
 
+            if ($this->invoice->isIssued()) {
+                $this->addFlash('error', 'invoice.edit.issued');
+
+                return null;
+            }
+
             $this->formManager->updateInvoiceFromDTO($this->invoice, $dto);
 
             if (('send' === $action || 'publish' === $action) && $this->invoiceStateMachine->can($this->invoice, Graph::TRANSITION_ACCEPT)) {

@@ -37,6 +37,14 @@ final class GeneratorTest extends TestCase
         self::assertStringStartsWith('%PDF-', $output);
     }
 
+    public function testThaiTextIsSetInAFontThatHasThaiGlyphs(): void
+    {
+        $generator = new Generator(sys_get_temp_dir(), new NullLogger());
+        $output = $generator->generate('<body>บริษัท ทดสอบ จำกัด</body>');
+
+        self::assertStringContainsString('Garuda', $output);
+    }
+
     public function testCanPrintPdf(): void
     {
         $generator = new Generator(sys_get_temp_dir(), new NullLogger());

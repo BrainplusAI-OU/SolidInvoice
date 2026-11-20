@@ -24,12 +24,10 @@ use SolidInvoice\InvoiceBundle\Entity\Line;
 use SolidInvoice\InvoiceBundle\Enum\InvoiceStatus;
 use SolidInvoice\InvoiceBundle\Enum\PaymentTerms;
 use SolidInvoice\InvoiceBundle\Manager\InvoiceFormManager;
-use SolidInvoice\InvoiceBundle\Model\Graph;
 use SolidInvoice\InvoiceBundle\Twig\Components\CreateInvoice;
 use SolidInvoice\TaxBundle\Entity\Tax;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
-use Symfony\Component\Workflow\WorkflowInterface;
 
 final class CreateInvoiceTest extends LiveComponentTest
 {
@@ -137,6 +135,30 @@ final class CreateInvoiceTest extends LiveComponentTest
         $this->assertMatchesHtmlSnapshot($this->replaceChecksum($component->render()->toString()));
     }
 
+    public function testAddingALineTaxAndAnInvoiceTaxRendersTheTaxChoices(): void
+    {
+        $em = self::getContainer()->get('doctrine')->getManager();
+
+        $em->persist(new Tax()->setName('WHT')->setRate(3)->setType(Tax::TYPE_EXCLUSIVE));
+        $em->flush();
+
+        $dto = new InvoiceFormDTO();
+        $dto->invoiceDate = CarbonImmutable::parse('2021-01-01');
+        $dto->lines->add(new Line()->setPrice(10000)->setQty(1));
+
+        $component = $this->createLiveComponent(
+            name: CreateInvoice::class,
+            data: ['dto' => $dto]
+        )->actingAs($this->getUser());
+
+        $component->call('addCollectionItem', ['name' => 'invoice[lines][0][taxes]']);
+        $component->call('addCollectionItem', ['name' => 'invoice[invoiceTaxes]']);
+
+        $html = $component->render()->toString();
+
+        self::assertSame(2, substr_count($html, '>WHT (3%)</option>'));
+    }
+
     /**
      * Tests that contacts are auto-selected when a client is pre-selected.
      * The component's PostMount hook should auto-select all contacts.
@@ -188,14 +210,10 @@ final class CreateInvoiceTest extends LiveComponentTest
     }
 
     /**
-     * Regression test for issue #2347.
-     *
-     * When editing a Pending invoice (accept transition already applied) and clicking
-     * "Save & Send", the component must not throw NotEnabledTransitionException.
-     * The workflow guard introduced in CreateInvoice::saveInvoice() skips the
-     * accept transition when it is no longer enabled.
+     * An issued invoice is a legal document: saving changes to it from the editor is refused,
+     * and the invoice keeps what it said when it was issued.
      */
-    public function testSaveSendDoesNotThrowWhenInvoiceAlreadyPending(): void
+    public function testSavingAnIssuedInvoiceIsRefused(): void
     {
         $em = self::getContainer()->get('doctrine')->getManager();
 
@@ -228,18 +246,11 @@ final class CreateInvoiceTest extends LiveComponentTest
         $em->persist($invoice);
         $em->flush();
 
-        // Verify the accept transition is indeed unavailable for a Pending invoice.
-        /** @var WorkflowInterface $stateMachine */
-        $stateMachine = self::getContainer()->get('state_machine.invoice');
-        self::assertFalse(
-            $stateMachine->can($invoice, Graph::TRANSITION_ACCEPT),
-            'The accept transition must not be available for a Pending invoice.',
-        );
-
         // Build the DTO from the existing invoice (simulates the edit page load).
         /** @var InvoiceFormManager $formManager */
         $formManager = self::getContainer()->get(InvoiceFormManager::class);
         $dto = $formManager->createDTOFromInvoice($invoice);
+        $dto->terms = 'Changed after issue';
 
         $component = $this->createLiveComponent(
             name: CreateInvoice::class,
@@ -251,18 +262,14 @@ final class CreateInvoiceTest extends LiveComponentTest
             client: $this->client,
         )->actingAs($this->getUser());
 
-        // Before the fix this threw NotEnabledTransitionException.
         $component->call('saveSend');
 
-        // The invoice status must remain Pending — no re-accept attempted.
         $em = self::getContainer()->get('doctrine')->getManager();
         $refreshedInvoice = $em->find(Invoice::class, $invoice->getId());
         self::assertNotNull($refreshedInvoice);
         self::assertSame(InvoiceStatus::Pending, $refreshedInvoice->getStatus());
-
-        // The action must have produced a redirect (not a 422 / exception page).
-        $response = $this->client->getResponse();
-        self::assertInstanceOf(RedirectResponse::class, $response);
+        self::assertNull($refreshedInvoice->getTerms());
+        self::assertNotInstanceOf(RedirectResponse::class, $this->client->getResponse());
     }
 
     public function testSendWithoutRecipientsDoesNotPublishTheInvoice(): void

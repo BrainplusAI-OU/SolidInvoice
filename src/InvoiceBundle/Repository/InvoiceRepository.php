@@ -291,7 +291,8 @@ class InvoiceRepository extends EntityRepository
 
         array_walk($ids, function (string $id) use ($em): void {
             $entity = $this->find($id);
-            if ($entity instanceof Invoice) {
+            // An issued invoice is a legal record: it is corrected by a credit note, never deleted.
+            if ($entity instanceof Invoice && ! $entity->isIssued()) {
                 $em->remove($entity);
             }
         });
@@ -306,7 +307,8 @@ class InvoiceRepository extends EntityRepository
      */
     public function isFullyPaid(Invoice $invoice): bool
     {
-        $invoiceTotal = $invoice->getTotal();
+        // Credit notes and certified withholding lower what the client owes.
+        $invoiceTotal = $invoice->getAmountOwed();
 
         $totalPaid = $this->getEntityManager()
             ->getRepository(Payment::class)
