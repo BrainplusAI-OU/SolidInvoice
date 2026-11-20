@@ -8,6 +8,10 @@ FROM dunglas/frankenphp:1-php8.4 AS base
 
 RUN install-php-extensions bcmath gd intl opcache pdo_mysql pdo_pgsql redis soap sodium xsl zip
 
+# PHP's own defaults (2 MB a file, 8 MB a request) turn away a phone photo of a receipt, which
+# ExpenseAttachment::MAX_SIZE allows up to 10 MB; an API post carries it base64-encoded.
+RUN printf 'upload_max_filesize = 10M\npost_max_size = 32M\n' > "$PHP_INI_DIR/conf.d/zz-uploads.ini"
+
 ENV SOLIDINVOICE_ENV=prod \
     SOLIDINVOICE_DEBUG=0 \
     SOLIDINVOICE_CONFIG_DIR=/etc/solidinvoice \

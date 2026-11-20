@@ -137,6 +137,30 @@ final class CreateInvoiceTest extends LiveComponentTest
         $this->assertMatchesHtmlSnapshot($this->replaceChecksum($component->render()->toString()));
     }
 
+    public function testAddingALineTaxAndAnInvoiceTaxRendersTheTaxChoices(): void
+    {
+        $em = self::getContainer()->get('doctrine')->getManager();
+
+        $em->persist(new Tax()->setName('WHT')->setRate(3)->setType(Tax::TYPE_EXCLUSIVE));
+        $em->flush();
+
+        $dto = new InvoiceFormDTO();
+        $dto->invoiceDate = CarbonImmutable::parse('2021-01-01');
+        $dto->lines->add(new Line()->setPrice(10000)->setQty(1));
+
+        $component = $this->createLiveComponent(
+            name: CreateInvoice::class,
+            data: ['dto' => $dto]
+        )->actingAs($this->getUser());
+
+        $component->call('addCollectionItem', ['name' => 'invoice[lines][0][taxes]']);
+        $component->call('addCollectionItem', ['name' => 'invoice[invoiceTaxes]']);
+
+        $html = $component->render()->toString();
+
+        self::assertSame(2, substr_count($html, '>WHT (3%)</option>'));
+    }
+
     /**
      * Tests that contacts are auto-selected when a client is pre-selected.
      * The component's PostMount hook should auto-select all contacts.

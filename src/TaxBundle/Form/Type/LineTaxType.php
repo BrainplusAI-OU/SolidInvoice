@@ -35,6 +35,8 @@ final class LineTaxType extends AbstractType
         $builder
             ->add('tax', EntityType::class, [
                 'class' => Tax::class,
+                // EntityType turns choice translation off, which would print the TranslatableMessage label raw.
+                'choice_translation_domain' => 'messages',
                 'placeholder' => 'tax.line_tax.tax.placeholder',
                 'required' => false,
                 'choice_label' => static function (Tax $tax): TranslatableMessage {
