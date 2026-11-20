@@ -952,7 +952,7 @@ h1, h2, h3, h4, h5, h6,
     min-width: 0;
     color: var(--ws-text);
 
-    h1 {
+    .ws-page-heading {
         display: flex;
         align-items: center;
         gap: 0.25rem;
