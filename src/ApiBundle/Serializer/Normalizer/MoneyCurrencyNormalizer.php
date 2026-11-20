@@ -18,6 +18,7 @@ use ApiPlatform\Metadata\IriConverterInterface;
 use ArrayObject;
 use Doctrine\Persistence\ManagerRegistry;
 use SolidInvoice\ApiBundle\Versioning\ApiVersion;
+use SolidInvoice\CatalogBundle\Entity\CatalogItem;
 use SolidInvoice\ClientBundle\Entity\Client;
 use SolidInvoice\CoreBundle\Contracts\HasFrozenCurrencyInterface;
 use SolidInvoice\ExpenseBundle\Entity\Expense;
@@ -67,6 +68,7 @@ final class MoneyCurrencyNormalizer implements NormalizerInterface, NormalizerAw
         Payment::class,
         Client::class,
         Expense::class,
+        CatalogItem::class,
     ];
 
     public function __construct(
@@ -134,6 +136,7 @@ final class MoneyCurrencyNormalizer implements NormalizerInterface, NormalizerAw
                 $record instanceof Payment => $record->getCurrencyCode(),
                 $record instanceof Client => $record->getCurrencyCode(),
                 $record instanceof Expense => $record->getCurrencyCode(),
+                $record instanceof CatalogItem => $record->getCurrencyCode() !== '' ? $record->getCurrencyCode() : null,
                 default => null,
             };
         } catch (Throwable) {
@@ -151,7 +154,7 @@ final class MoneyCurrencyNormalizer implements NormalizerInterface, NormalizerAw
             return null;
         }
 
-        if (is_a($type, Client::class, true) || is_a($type, Expense::class, true)) {
+        if (is_a($type, Client::class, true) || is_a($type, Expense::class, true) || is_a($type, CatalogItem::class, true)) {
             return is_string($data['currencyCode'] ?? null) ? $data['currencyCode'] : null;
         }
 

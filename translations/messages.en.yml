@@ -49,6 +49,29 @@ billing:
     tax: Tax
     total: Total
     withholding: 'Withholding & adjustments'
+catalog:
+    item:
+        add: 'Add Item'
+        details: 'Item Details'
+        edit: 'Edit Item'
+        flash:
+            saved: 'Item saved.'
+        form:
+            description: Description
+            description_help: 'Copied onto the line, where you can still change it.'
+            name: Name
+            no_tax: 'No tax'
+            price: Price
+            price_help: 'Leave at zero for a price you type on each line.'
+            tax: Tax
+        grid:
+            delete_confirm: 'Delete the selected items? Invoices and quotes that use them keep their lines.'
+        subtitle: 'Something you sell, to fill an invoice or quote line from.'
+        title: Items
+    line:
+        add: 'Add from catalog'
+    menu:
+        main: Items
 change_password:
     form:
         confirm_password: 'Confirm New Password'

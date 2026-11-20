@@ -73,6 +73,18 @@ parameters:
 			path: src/CoreBundle/Traits/Entity/TimeStampable.php
 
 		-
+			message: '#^Property SolidInvoice\\CatalogBundle\\Entity\\CatalogItem\:\:\$created type mapping mismatch\: property can contain DateTimeImmutable\|null but database expects DateTimeImmutable\.$#'
+			identifier: doctrine.columnType
+			count: 1
+			path: src/CoreBundle/Traits/Entity/TimeStampable.php
+
+		-
+			message: '#^Property SolidInvoice\\CatalogBundle\\Entity\\CatalogItem\:\:\$updated type mapping mismatch\: property can contain DateTimeImmutable\|null but database expects DateTimeImmutable\.$#'
+			identifier: doctrine.columnType
+			count: 1
+			path: src/CoreBundle/Traits/Entity/TimeStampable.php
+
+		-
 			message: '#^Property SolidInvoice\\InvoiceBundle\\Entity\\WithholdingCertificate\:\:\$created type mapping mismatch\: property can contain DateTimeImmutable\|null but database expects DateTimeImmutable\.$#'
 			identifier: doctrine.columnType
 			count: 1

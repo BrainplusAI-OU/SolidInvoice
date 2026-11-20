@@ -16,6 +16,7 @@ namespace SolidInvoice\QuoteBundle\Twig\Components;
 use Brick\Math\Exception\MathException;
 use Doctrine\ORM\EntityManagerInterface;
 use InvalidArgumentException;
+use SolidInvoice\CatalogBundle\Twig\Components\FillsLinesFromCatalog;
 use SolidInvoice\ClientBundle\Entity\Client;
 use SolidInvoice\ClientBundle\Repository\ClientRepository;
 use SolidInvoice\CoreBundle\Billing\TotalCalculator;
@@ -59,6 +60,7 @@ final class CreateQuote extends AbstractController
     use DefaultActionTrait;
     use LiveCollectionTrait;
     use ReordersLines;
+    use FillsLinesFromCatalog;
 
     public QuoteFormDTO $dto;
 
