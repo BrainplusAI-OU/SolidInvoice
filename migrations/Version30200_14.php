@@ -21,7 +21,7 @@ use Doctrine\Migrations\AbstractMigration;
 use SolidInvoice\CoreBundle\Doctrine\Type\BigIntegerType;
 use Symfony\Bridge\Doctrine\Types\UlidType;
 
-final class Version30200_13 extends AbstractMigration
+final class Version30200_14 extends AbstractMigration
 {
     public function getDescription(): string
     {
