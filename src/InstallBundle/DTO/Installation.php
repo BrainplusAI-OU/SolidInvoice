@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace SolidInvoice\InstallBundle\DTO;
 
 use SensitiveParameter;
+use SolidInvoice\CoreBundle\Branding\Brand;
 use Symfony\Component\Validator\Constraints\Valid;
 
 final class Installation
@@ -29,5 +30,13 @@ final class Installation
         #[SensitiveParameter]
         public ?string $token = '',
     ) {
+    }
+
+    /**
+     * Usage statistics go to SolidInvoice's publisher; an installation under another brand leaves the box unticked.
+     */
+    public static function withDefaults(Brand $brand): self
+    {
+        return new self(telemetryEnabled: ! $brand->isWhiteLabel());
     }
 }

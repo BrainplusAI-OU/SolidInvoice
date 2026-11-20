@@ -15,6 +15,7 @@ namespace SolidInvoice\UserBundle\Tests\Affiliate;
 
 use DateTimeImmutable;
 use DateTimeInterface;
+use SolidInvoice\CoreBundle\Branding\Brand;
 use SolidInvoice\DashboardBundle\Checklist\ChecklistManager;
 use SolidInvoice\InstallBundle\Test\EnsureApplicationInstalled;
 use SolidInvoice\UserBundle\Affiliate\AffiliateProgram;
@@ -108,7 +109,13 @@ final class AffiliateProgramTest extends KernelTestCase
         return $user;
     }
 
-    private function program(bool $enabled = true): AffiliateProgram
+    public function testAWhiteLabelledInstallationHasNoAffiliateProgramme(): void
+    {
+        self::assertTrue($this->program()->isEnabled());
+        self::assertFalse($this->program(brand: new Brand('Palmora Property'))->isEnabled());
+    }
+
+    private function program(bool $enabled = true, Brand $brand = new Brand()): AffiliateProgram
     {
         return new AffiliateProgram(
             $this->settings,
@@ -120,6 +127,7 @@ final class AffiliateProgramTest extends KernelTestCase
             '20%',
             '$93',
             3,
+            $brand,
         );
     }
 }

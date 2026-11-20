@@ -21,6 +21,7 @@ use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
 use Mockery as M;
 use PHPUnit\Framework\TestCase;
 use ReflectionMethod;
+use SolidInvoice\CoreBundle\Branding\Brand;
 use SolidInvoice\CoreBundle\ConfigWriter;
 use SolidInvoice\CoreBundle\Entity\Version;
 use SolidInvoice\CoreBundle\Repository\VersionRepository;
@@ -253,6 +254,17 @@ final class InstallCommandTest extends TestCase
         self::assertDirectoryExists($configDir . '/db');
     }
 
+    public function testAWhiteLabelledInstallationSendsNoUsageStatistics(): void
+    {
+        $input = M::mock(InputInterface::class);
+        $input->shouldReceive('getOption')->with('disable-telemetry')->andReturnFalse();
+
+        $method = new ReflectionMethod(InstallCommand::class, 'telemetryEnabled');
+
+        self::assertTrue($method->invoke($this->createCommand(M::mock(ManagerRegistry::class)), $input));
+        self::assertFalse($method->invoke($this->createCommand(M::mock(ManagerRegistry::class), brand: new Brand('Palmora Property')), $input));
+    }
+
     public function testValidateDoesNotRequireHostUserOrApplicationUrlForSqlite(): void
     {
         $input = M::mock(InputInterface::class);
@@ -338,6 +350,7 @@ final class InstallCommandTest extends TestCase
         ?ConfigWriter $configWriter = null,
         string $configDir = '/tmp/test-config',
         ?ServiceLocator $steps = null,
+        ?Brand $brand = null,
     ): InstallCommand {
         $configWriter ??= new ConfigWriter($this->createStub(AbstractVault::class), '/tmp/test-secrets');
 
@@ -362,6 +375,7 @@ final class InstallCommandTest extends TestCase
             $steps ?? new ServiceLocator([]),
             $this->createStub(KernelInterface::class),
             $telemetry,
+            $brand ?? new Brand(),
             $configDir,
             null
         );
