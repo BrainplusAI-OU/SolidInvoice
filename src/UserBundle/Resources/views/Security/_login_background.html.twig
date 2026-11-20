@@ -1,0 +1,20 @@
+{#
+ # This file is part of SolidInvoice package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{# A custom photo behind the signed-out pages (SOLIDINVOICE_LOGIN_BACKGROUND), in place of login.scss's default. #}
+{% set background = login_background() %}
+{% if background %}
+    <style>
+        body .page {
+            background-image: url("{{ background }}");
+            background-size: cover;
+            background-position: center;
+        }
+    </style>
+{% endif %}

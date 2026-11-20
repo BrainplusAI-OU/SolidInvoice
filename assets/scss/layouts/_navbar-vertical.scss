@@ -25,6 +25,14 @@
         font-weight: var(--tblr-font-semibold);
     }
 
+    // Logo above the company name (Layout/default.html.twig): larger than the default 2rem.
+
+    .sidebar-brand-stacked .navbar-brand-image {
+        height: 3.5rem;
+        width: auto;
+        max-width: 100%;
+    }
+
     .navbar-brand-autodark {
         filter: none;
     }

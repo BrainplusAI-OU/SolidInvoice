@@ -42,6 +42,9 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $parameters->set('env(SOLIDINVOICE_BRAND_NAME)', '');
     $parameters->set('env(SOLIDINVOICE_EXCHANGE_RATE_URL)', 'https://api.frankfurter.app');
     $parameters->set('env(SOLIDINVOICE_BRAND_LOGO)', '');
+    $parameters->set('env(SOLIDINVOICE_LOGIN_BACKGROUND)', '');
+    $parameters->set('env(SOLIDINVOICE_LOGIN_BACKGROUND_CREDIT)', '');
+    $parameters->set('env(SOLIDINVOICE_LOGIN_BACKGROUND_CREDIT_URL)', '');
     $parameters->set('env(SOLIDINVOICE_RUNTIME)', null);
     $parameters->set('env(SOLIDINVOICE_ALLOW_REGISTRATION)', false);
     $parameters->set('env(SOLIDINVOICE_OAUTH_CLIENT_GOOGLE_CLIENT_ID)', null);
