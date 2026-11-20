@@ -374,6 +374,7 @@ h1, h2, h3, h4, h5, h6,
 // drawer slides over the page (Bootstrap .offcanvas-lg) behind a slim top bar.
 
 .ws-sidebar {
+
     > .container-fluid {
         padding: 0;
         flex-wrap: nowrap;
@@ -483,6 +484,7 @@ h1, h2, h3, h4, h5, h6,
         }
 
         // The company switcher moves into the drawer; "Create" keeps only its icon.
+
         .ws-company-switcher {
             display: none;
         }
@@ -551,6 +553,7 @@ h1, h2, h3, h4, h5, h6,
 }
 
 // Tabler underlines the active top-level link; Twenty marks it with the row fill alone.
+
 .ws-sidebar .nav-link::after,
 .ws-sidebar .nav-item.active > .nav-link::after,
 .ws-sidebar .nav-item.active::after,
@@ -699,6 +702,7 @@ h1, h2, h3, h4, h5, h6,
 // every width, as it already did on desktop.
 
 @media (width < 992px) {
+
     .page-wrapper {
         overflow-x: clip;
     }
