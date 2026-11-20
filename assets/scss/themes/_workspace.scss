@@ -58,6 +58,9 @@
     --ws-row-height: 32px;
     --ws-control-height: 32px;
     --ws-nav-item-height: 28px;
+    --ws-drawer-width: 220px;   // Twenty: NAVIGATION_DRAWER_CONSTRAINTS.default
+    --ws-header-height: 48px;   // Twenty: APP_HEADER_HEIGHT
+    --ws-modes-height: 40px;    // Twenty: the drawer's mode row
     --tblr-body-bg: var(--ws-frame);
     --tblr-bg-surface: var(--ws-surface);
     --tblr-surface: var(--ws-surface);
@@ -165,14 +168,14 @@ h1, h2, h3, h4, h5, h6,
     background-color: var(--ws-frame);
     color: var(--ws-text-secondary);
     border-right: 0;
-    width: 15rem;
+    width: var(--ws-drawer-width);
 
     @media (width >= 992px) {
 
         & ~ .page-wrapper,
         & ~ .navbar,
         & ~ header.navbar {
-            margin-left: 15rem;
+            margin-left: var(--ws-drawer-width);
         }
     }
 
@@ -369,26 +372,54 @@ h1, h2, h3, h4, h5, h6,
 // ----------------------------------------------------------------------------
 // 2b. Navigation drawer, Twenty layout (CoreBundle Layout/default.html.twig)
 // ----------------------------------------------------------------------------
-// Values follow Twenty's navigation drawer: 28px rows, 16px icons, 13px labels,
-// an 11px section label, sub-items hanging off a hairline. Below lg the same
-// drawer slides over the page (Bootstrap .offcanvas-lg) behind a slim top bar.
+// Values follow Twenty's NavigationDrawer: a 220px drawer on the frame colour,
+// a 48px workspace header, a 40px row of modes (Home, Settings), 28px rows with
+// 16px icons and 13px medium labels, 8px radius, 11px section titles.
+// Below lg the drawer covers the whole screen and is opened from a floating bar.
 
 .ws-sidebar {
+    padding: 0 !important;
 
-    > .container-fluid {
-        padding: 0;
-        flex-wrap: nowrap;
+    @media (width < 992px) {
+        position: absolute !important;
+        width: 0 !important;
+        height: 0;
+        min-height: 0 !important;
+        overflow: visible;
+        border: 0 !important;
+    }
+}
+
+.ws-drawer {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--ws-frame);
+    padding: 0 0.5rem 1rem;
+
+    @media (width >= 992px) {
+        width: 100%;
+        height: 100%;
     }
 
     @media (width < 992px) {
-        position: sticky;
-        top: 0;
-        z-index: 1030;
-        width: 100% !important;
-        min-height: 0;
-        padding: 0;
-        border-bottom: 1px solid var(--ws-border);
+        width: 100vw !important;
+        border: 0 !important;
     }
+}
+
+// Tabler underlines the active top-level link; Twenty marks it with the row fill alone.
+
+.ws-sidebar .nav-link::after,
+.ws-sidebar .nav-item.active > .nav-link::after,
+.ws-sidebar .nav-item.active::after,
+.ws-sidebar .nav-item::after {
+    display: none !important;
+}
+
+// Every nav-link icon shows at every width (the platform hides them at md).
+
+.ws-sidebar .nav-link-icon {
+    display: inline-block !important;
 }
 
 .ws-icon-button {
@@ -396,11 +427,11 @@ h1, h2, h3, h4, h5, h6,
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    width: 2rem;
-    height: 2rem;
+    width: 1.75rem;
+    height: 1.75rem;
     padding: 0;
     border: 0;
-    border-radius: var(--ws-radius-sm);
+    border-radius: var(--ws-radius-md);
     background: transparent;
     color: var(--ws-text-secondary);
 
@@ -415,21 +446,46 @@ h1, h2, h3, h4, h5, h6,
     }
 }
 
-// Workspace row: square logo + name on one line.
+// Workspace header: the workspace menu button, at the height of the page header,
+// so both bottom borders read as one line.
+
+.ws-drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem;
+    flex-shrink: 0;
+    height: var(--ws-header-height);
+    margin: 0 -0.5rem;
+    padding: 0 0.5rem;
+    border-bottom: 1px solid var(--ws-border);
+}
 
 .ws-workspace {
+    min-width: 0;
+}
+
+.ws-workspace-button {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    min-width: 0;
-    flex: 1 1 auto;
-    height: 2.25rem;
-    padding: 0 0.375rem;
-    border-radius: var(--ws-radius-sm);
-    color: var(--ws-text) !important;
+    max-width: 100%;
+    height: 1.75rem;
+    padding: 0 0.25rem;
+    border: 1px solid transparent;
+    border-radius: var(--ws-radius-md);
+    background: transparent;
+    color: var(--ws-text);
 
-    &:hover {
+    &:hover,
+    &[aria-expanded='true'] {
         background-color: var(--ws-hover);
+        border-color: var(--ws-border);
+    }
+
+    &:focus-visible {
+        outline: none;
+        box-shadow: var(--tblr-ring-primary);
     }
 }
 
@@ -438,8 +494,8 @@ h1, h2, h3, h4, h5, h6,
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 1rem;
+    height: 1rem;
     overflow: hidden;
     border-radius: var(--ws-radius-sm);
 
@@ -458,115 +514,151 @@ h1, h2, h3, h4, h5, h6,
     white-space: nowrap;
     text-overflow: ellipsis;
     font-size: 0.8125rem;
-    font-weight: 600;
+    font-weight: 500;
     line-height: 1.25rem;
 }
 
-// Mobile top bar.
+.ws-workspace-chevron {
+    flex-shrink: 0;
+    color: var(--ws-text-tertiary);
+}
 
-.ws-mobile-bar {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    width: 100%;
-    min-height: 3rem;
-    padding: 0.375rem 0.5rem;
-    background-color: var(--ws-frame);
+// Dropdowns of the frame (workspace menu, create menu): Twenty's floating menu.
 
-    .ws-mobile-actions {
-        margin-left: auto;
+.ws-menu {
+    min-width: 13.75rem;
+    padding: 0.25rem;
+    border: 1px solid var(--ws-border);
+    border-radius: var(--ws-radius-md);
+    box-shadow: var(--tblr-shadow-lg);
+
+    .dropdown-item {
+        display: flex;
         align-items: center;
-        gap: 0.25rem;
-        flex-shrink: 0;
+        gap: 0.5rem;
+        min-height: 2rem;
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--ws-radius-sm);
+        color: var(--ws-text-secondary);
+        font-size: 0.8125rem;
+        font-weight: 500;
 
-        .nav-item.mx-4 {
-            margin: 0 !important;
+        &:hover {
+            background-color: var(--ws-hover);
+            color: var(--ws-text);
         }
+    }
 
-        // The company switcher moves into the drawer; "Create" keeps only its icon.
+    .dropdown-divider {
+        margin: 0.25rem -0.25rem;
+        border-color: var(--ws-border-light);
+    }
 
-        .ws-company-switcher {
-            display: none;
-        }
+    .nav-link-icon {
+        display: inline-flex;
+        margin: 0;
 
-        .ws-create .btn {
-            width: 2rem;
-            height: 2rem;
-            padding: 0;
-            justify-content: center;
-
-            &::after {
-                display: none;
-            }
-
-            svg {
-                margin: 0 !important;
-            }
-        }
-
-        .ws-create-label {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            overflow: hidden;
-            clip-path: inset(50%);
-            white-space: nowrap;
+        svg {
+            width: 1rem;
+            height: 1rem;
         }
     }
 }
 
-// The drawer itself.
-
-.ws-drawer {
-    display: flex;
-    flex-direction: column;
-    background-color: var(--ws-frame);
-
-    @media (width < 992px) {
-        width: min(85vw, 18rem) !important;
-        padding: 0.5rem;
-        border-right: 1px solid var(--ws-border) !important;
-    }
-
-    @media (width >= 992px) {
-        width: 100%;
-        height: 100%;
-        padding: 0.5rem 0.5rem 1rem;
-    }
+.ws-menu .dropdown-item .nav-link-icon {
+    margin-right: 0 !important;
 }
 
-.ws-drawer-head {
+.ws-menu-current {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
-    margin-bottom: 0.75rem;
+    gap: 0.5rem;
+    min-height: 2rem;
+    padding: 0.25rem 0.5rem;
+    color: var(--ws-text);
 }
 
-.ws-drawer-switcher {
-    margin-bottom: 0.75rem;
+// Logging out is a POST: a button styled like the row it sits in.
 
-    .ws-company-switcher,
-    .ws-company-switcher .btn {
+.ws-logout {
+    margin: 0;
+
+    button {
+        display: flex;
+        align-items: center;
         width: 100%;
-        justify-content: space-between;
+        border: 0;
+        background: transparent;
+        text-align: left;
     }
 }
 
-// Tabler underlines the active top-level link; Twenty marks it with the row fill alone.
+// Mode row: Home and Settings. The active mode shows its label, the other only its icon.
 
-.ws-sidebar .nav-link::after,
-.ws-sidebar .nav-item.active > .nav-link::after,
-.ws-sidebar .nav-item.active::after,
-.ws-sidebar .nav-item::after {
-    display: none !important;
+.ws-drawer-modes {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-shrink: 0;
+    height: var(--ws-modes-height);
+    margin: 0 -0.5rem;
+    padding: 0 0.5rem;
+    border-bottom: 1px solid var(--ws-border-light);
 }
 
-.ws-drawer-body {
-    display: flex;
-    flex-direction: column;
+.ws-mode {
+    display: inline-flex;
+    align-items: center;
+    gap: 0;
+    min-width: 0;
+    height: 1.75rem;
+    padding: 0 0.375rem;
+    border: 0;
+    border-radius: var(--ws-radius-sm);
+    background: transparent;
+    color: var(--ws-text-tertiary);
+    font-size: 0.8125rem;
+    font-weight: 500;
+
+    svg {
+        flex-shrink: 0;
+    }
+
+    .ws-mode-label {
+        display: none;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+    }
+
+    &:hover {
+        background-color: var(--ws-hover);
+        color: var(--ws-text);
+    }
+
+    &.active {
+        gap: 0.25rem;
+        background-color: var(--ws-hover);
+        color: var(--ws-text);
+
+        .ws-mode-label {
+            display: inline;
+        }
+    }
+
+    &:focus-visible {
+        outline: none;
+        box-shadow: var(--tblr-ring-primary);
+    }
+}
+
+// Rows of the current mode.
+
+.ws-sidebar .ws-drawer-content {
     flex: 1 1 auto;
     min-height: 0;
     overflow-y: auto;
+    padding-top: 0.5rem;
 
     .navbar-nav {
         display: flex;
@@ -575,15 +667,75 @@ h1, h2, h3, h4, h5, h6,
         padding: 0 !important;
         margin: 0;
     }
+
+    .navbar-nav + .navbar-nav {
+        margin-top: 2px;
+    }
+
+    .nav-link,
+    .ws-logout button {
+        height: var(--ws-nav-item-height);
+        min-height: 0;
+        padding: 0.25rem;
+        border-radius: var(--ws-radius-md);
+        color: var(--ws-text-secondary);
+        font-size: 0.8125rem;
+        font-weight: 500;
+        line-height: 1.25rem;
+        white-space: nowrap;
+
+        .nav-link-icon {
+            display: inline-flex !important;
+            align-items: center;
+            justify-content: center;
+            width: 1rem;
+            height: 1rem;
+            margin-right: 0.5rem;
+            color: inherit;
+        }
+
+        .nav-link-title {
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        &:hover {
+            background-color: var(--ws-hover);
+            color: var(--ws-text);
+        }
+    }
+
+    .nav-item.active > .nav-link {
+        background-color: var(--ws-hover);
+        color: var(--ws-text);
+    }
 }
 
-.ws-section-label {
-    padding: 0.25rem 0.5rem;
-    margin-bottom: 0.125rem;
+.ws-fixed-rows {
+    margin-bottom: 0.5rem !important;
+
+    button.nav-link {
+        width: 100%;
+        border: 0;
+        background: transparent;
+        text-align: left;
+    }
+}
+
+.ws-section-title {
+    display: flex;
+    align-items: center;
+    height: var(--ws-nav-item-height);
+    padding: 0.25rem;
     color: var(--ws-text-tertiary);
     font-size: 0.6875rem;
     font-weight: 600;
     line-height: 1rem;
+
+    .tab-pane > & ~ & {
+        margin-top: 0.75rem;
+    }
 }
 
 // Section row: the link fills the row, "+" appears on hover (always on touch).
@@ -596,7 +748,7 @@ h1, h2, h3, h4, h5, h6,
     position: relative;
     display: flex;
     align-items: center;
-    border-radius: var(--ws-radius-sm);
+    border-radius: var(--ws-radius-md);
 
     > .nav-link {
         flex: 1 1 auto;
@@ -606,14 +758,16 @@ h1, h2, h3, h4, h5, h6,
 
     &:hover {
         background-color: var(--ws-hover);
+
+        > .nav-link {
+            color: var(--ws-text);
+        }
     }
 
-    &.is-current,
-    &.is-current:hover {
-        background-color: var(--ws-active);
+    &.is-current {
+        background-color: var(--ws-hover);
 
-        > .nav-link,
-        .nav-link-icon {
+        > .nav-link {
             color: var(--ws-text) !important;
         }
     }
@@ -630,11 +784,11 @@ h1, h2, h3, h4, h5, h6,
     border-radius: var(--ws-radius-sm);
     color: var(--ws-text-tertiary);
     opacity: 0;
-    transition: opacity 0.1s ease-out;
+    transition: opacity 0.15s;
 
     svg {
-        width: 0.875rem;
-        height: 0.875rem;
+        width: 1rem;
+        height: 1rem;
     }
 
     &:hover {
@@ -649,7 +803,7 @@ h1, h2, h3, h4, h5, h6,
     }
 
     .ws-row:hover &,
-    .ws-row.is-current & {
+    .ws-row:focus-within & {
         opacity: 1;
     }
 
@@ -659,23 +813,24 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .ws-sublist {
-    list-style: none;
-    margin: 2px 0 2px 1rem;
-    padding: 0 0 0 0.5rem;
-    border-left: 1px solid var(--ws-border);
     display: flex;
     flex-direction: column;
     gap: 2px;
+    list-style: none;
+    margin: 2px 0 2px 0.75rem;
+    padding: 0 0 0 0.75rem;
+    border-left: 1px solid var(--ws-border);
 }
 
 .ws-subitem {
     display: flex;
     align-items: center;
-    min-height: var(--ws-nav-item-height);
-    padding: 0.25rem 0.5rem;
-    border-radius: var(--ws-radius-sm);
+    height: var(--ws-nav-item-height);
+    padding: 0.25rem;
+    border-radius: var(--ws-radius-md);
     color: var(--ws-text-secondary);
     font-size: 0.8125rem;
+    font-weight: 500;
     line-height: 1.25rem;
     text-decoration: none;
 
@@ -686,75 +841,89 @@ h1, h2, h3, h4, h5, h6,
     }
 
     &.is-current {
+        background-color: var(--ws-hover);
+        color: var(--ws-text);
+    }
+}
+
+// Phones: Twenty's floating bar, bottom left, over the page.
+
+.ws-mobile-bar {
+    position: fixed;
+    bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+    left: 0.75rem;
+    z-index: 1030;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem;
+    border: 1px solid rgb(0 0 0 / 7%);
+    border-radius: 999px;
+    background: rgb(255 255 255 / 72%);
+    backdrop-filter: blur(20px) saturate(200%);
+    box-shadow: 0 2px 4px rgb(0 0 0 / 8%), 0 0 8px rgb(0 0 0 / 8%);
+}
+
+.ws-mobile-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ws-text-secondary);
+
+    &:hover,
+    &[aria-expanded='true'] {
         background-color: var(--ws-active);
         color: var(--ws-text);
-        font-weight: 500;
+    }
+
+    &:focus-visible {
+        outline: none;
+        box-shadow: var(--tblr-ring-primary);
     }
 }
 
-// Every nav-link icon shows at every width (the platform hides them at md).
-
-.ws-sidebar .nav-link-icon {
-    display: inline-block !important;
-}
-
-// Nothing in the page may widen it past the phone screen: the panel clips at
-// every width, as it already did on desktop.
-
-@media (width < 992px) {
-
-    .page-wrapper {
-        overflow-x: clip;
-    }
+.ws-mobile-divider {
+    align-self: stretch;
+    width: 1px;
+    margin: 0.5rem 0;
+    background: var(--ws-border);
 }
 
 // ============================================================================
-// 3. TOP BAR AND PAGE PANEL
+// 3. PAGE CARD
 // ============================================================================
 
-// The top bar sits on the frame; the page below is one white panel with a
-// hairline border, like a sheet laid on the desk.
-
-header.navbar {
-    background: transparent;
-    border-bottom: 0;
-    box-shadow: none;
-    min-height: 3rem;
-    padding: 0.5rem 0;
-
-    .navbar-nav .nav-item.mx-4 {
-        margin: 0 0.5rem !important;
-    }
-
-    .nav-link {
-        font-size: 0.8125rem;
-        color: var(--ws-text-secondary);
-    }
-}
-
-// User menu initials, in the top bar and in the mobile drawer header.
-
-.navbar .nav-link > .avatar-sm {
-    width: 1.5rem;
-    height: 1.5rem;
-    font-size: 0.625rem;
-    border-radius: var(--ws-radius-sm);
-    background-color: var(--ws-surface-tertiary);
-    color: var(--ws-text-secondary);
-}
+// Twenty's PageCardLayout: the page is a white card against the drawer, a
+// border on its left edge, full height. Its header carries the icon and title
+// on the left and the page's actions on the right.
 
 .page-wrapper {
+    min-width: 0;
+
     @media (width >= 992px) {
+        min-height: 100vh;
         background: var(--ws-surface);
-        border: 1px solid var(--ws-border);
-        border-radius: var(--ws-radius-md);
-        margin-right: 0.5rem;
-        margin-bottom: 0.5rem;
-        min-height: calc(100vh - 3.5rem);
-        overflow: clip;
+        border-left: 1px solid var(--ws-border);
+        box-shadow: -4px 4px 4px 0 rgb(0 0 0 / 0.5%);
+    }
+
+    @media (width < 992px) {
+        min-height: 100vh;
+        background: var(--ws-surface);
+        overflow-x: clip;
+
+        // Room for the floating bar below the last row.
+        padding-bottom: 4.5rem;
     }
 
     .footer {
+        padding: 0.75rem;
         background: transparent;
         border-top: 1px solid var(--ws-border-light);
         color: var(--ws-text-tertiary);
@@ -762,37 +931,96 @@ header.navbar {
     }
 }
 
-.page-wrapper .page-header {
-    margin: 0;
-    min-height: 3rem;
-    padding-top: 0.625rem;
-    padding-bottom: 0.625rem;
-    border-bottom: 1px solid var(--ws-border-light);
-    margin-bottom: 1rem;
+.ws-page-header {
+    position: sticky;
+    top: 0;
+    z-index: 1020;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    min-height: var(--ws-header-height);
+    padding: 0.375rem 0.75rem;
+    background-color: var(--ws-surface-secondary);
+    border-bottom: 1px solid var(--ws-border);
 }
 
-.page-pretitle {
-    font-size: 0.75rem;
-    font-weight: 500;
-    text-transform: none;
-    letter-spacing: 0;
-    color: var(--ws-text-tertiary);
-}
-
-.page-title {
-    font-size: 1rem;
-    font-weight: 600;
+.ws-page-title {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    min-width: 0;
     color: var(--ws-text);
 
-    svg {
-        width: 1.125rem;
-        height: 1.125rem;
-        color: var(--ws-text-secondary);
+    h1 {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        min-width: 0;
+        margin: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        line-height: 1.25rem;
+        letter-spacing: 0;
+
+        svg {
+            flex-shrink: 0;
+            width: 1rem !important;
+            height: 1rem !important;
+            margin: 0 0.25rem 0 0 !important;
+            color: var(--ws-text-secondary);
+        }
     }
 }
 
-.page-body {
-    margin-top: 1rem;
+.ws-page-pretitle {
+    color: var(--ws-text-tertiary);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.ws-page-title-separator {
+    color: var(--ws-text-tertiary);
+}
+
+.ws-page-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+
+    .btn {
+        height: 1.75rem;
+        min-height: 0;
+        padding: 0 0.5rem;
+        gap: 0.25rem;
+        font-size: 0.8125rem;
+        font-weight: 500;
+
+        svg {
+            width: 1rem;
+            height: 1rem;
+            margin: 0 !important;
+        }
+    }
+}
+
+// Pages stretch across the card, as in Twenty; no centred column.
+
+.page-wrapper .page-body {
+    margin: 0;
+    padding: 0.75rem 0;
+
+    > .container-xl,
+    > .container-lg,
+    > .container {
+        max-width: none;
+    }
 }
 
 // Form pages (create invoice, quote, client...): a header line, not a hero.

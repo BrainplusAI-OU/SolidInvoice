@@ -8,22 +8,45 @@
  #}
 
 {#
- # Sidebar sections laid out like Twenty's navigation drawer.
+ # Sidebar laid out like Twenty's navigation drawer. Applies only when the layout passes `ws_part`.
  #
- # The platform template renders a section (Clients, Invoices...) as a dropdown toggle whose
- # children are "List" and "Add", so reaching the list costs two clicks and every row carries a
- # chevron. Here a section is one row instead:
+ # ws_part: 'main' (Home mode). The "System" section is left out: it lives in Settings mode. A section
+ # (Clients, Invoices...) is one row instead of a dropdown whose children are "List" and "Add":
  #   - the row links to the section's first child (the list);
  #   - an "add"/"create" child becomes a "+" button at the end of the row;
- #   - any other child (vendors, categories, settings pages...) is listed under the row, indented,
+ #   - any other child (vendors, categories, payment methods...) is listed under the row, indented,
  #     only while the section holds the current page.
+ #
+ # ws_part: 'settings' (Settings mode). Only the children of "System" are rendered, as flat rows,
+ # the company's general settings first, like Twenty's Workspace > General.
+ #
  # Leaf items and every other menu keep the platform rendering.
  #}
 {% extends '@!SolidWorxPlatform/Menu/menu.html.twig' %}
 {% import 'knp_menu.html.twig' as ui %}
 
 {% block item %}
-    {% if item.displayed and item.parent.isRoot and item.hasChildren and item.displayChildren and options.ws_sections|default(false) %}
+    {%- set ws_part = options.ws_part|default(null) -%}
+    {% if ws_part and item.parent.isRoot and item.name == 'menu.top.system' %}
+        {% if ws_part == 'settings' and item.displayed %}
+            {%- set ws_order = {'_settings': 0, '_users_list': 1} -%}
+            {%- set ws_rows = item.children|filter(c => c.displayed)|sort((a, b) => (ws_order[a.extras.routes[0].route|default('')] ?? 9) <=> (ws_order[b.extras.routes[0].route|default('')] ?? 9)) -%}
+            {% for child in ws_rows %}
+                {%- set ws_route = child.extras.routes[0].route|default('') -%}
+                {%- set ws_current = matcher.isCurrent(child) or matcher.isAncestor(child, options.matchingDepth) -%}
+                <li class="nav-item{{ ws_current ? ' active' }}">
+                    <a href="{{ child.uri }}" class="nav-link"{% if ws_current %} aria-current="page"{% endif %}>
+                        {% if child.extras.icon is defined %}
+                            <span class="nav-link-icon">{{ ux_icon('tabler:' ~ child.extras.icon) }}</span>
+                        {% endif %}
+                        <span class="nav-link-title">{{ (ws_route == '_settings' ? 'layout.nav.general' : child.label)|trans }}</span>
+                    </a>
+                </li>
+            {% endfor %}
+        {% endif %}
+    {% elseif ws_part == 'settings' and item.parent.isRoot %}
+        {# Only the System section belongs to Settings mode. #}
+    {% elseif ws_part == 'main' and item.displayed and item.parent.isRoot and item.hasChildren and item.displayChildren %}
         {%- set visible = item.children|filter(c => c.displayed) -%}
         {%- set linked = visible|filter(c => c.uri is not empty) -%}
         {#- The System section's natural landing page is Settings, not its first entry. -#}

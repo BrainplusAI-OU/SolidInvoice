@@ -9,101 +9,255 @@
 
 {% extends '@SolidInvoiceCore/Layout/base.html.twig' %}
 
-{% block navbar_actions %}
-    {% include "@SolidInvoiceCore/Menu/search.html.twig" with {"title" : block('title') ?? '', "header_content" : header_content|default('')} %}
-{% endblock navbar_actions %}
+{#
+ # Application frame laid out like Twenty's:
+ #
+ #   - no top bar: the navigation drawer on the left owns the workspace, the account and the settings;
+ #   - the drawer starts with the workspace menu (switch or add a company, log out), then a row of
+ #     two modes, Home and Settings, then the rows of the current mode;
+ #   - each page is a card next to the drawer, headed by its icon and title on the left and its
+ #     actions on the right;
+ #   - on phones the drawer covers the whole screen and is opened from a floating bar at the bottom.
+ #
+ # Pages keep defining `title` (icon + name) and `heading` (action buttons); `page_title`,
+ # `page_pretitle` and `page_title_actions` from the platform layout are honoured too.
+ #}
 
-{% block user_menu %}
-    {% include "@SolidInvoiceCore/Menu/top.html.twig" with {"title" : block('title') ?? '', "header_content" : header_content|default('')} %}
-    {{ parent() }}
-{% endblock user_menu %}
+{# Routes whose pages belong to the Settings mode of the drawer; the first list is the user's own. #}
+{% set ws_user_route_prefixes = ['_profile', 'solidworx_platform_profile', 'solidworx_platform_security', '_change_password', '_2fa', 'mcp_connected_apps', '_export'] %}
+{% set ws_settings_route_prefixes = ws_user_route_prefixes|merge(['_settings', '_tax_rates', '_tax_number', '_api_keys', '_users', '_user_', '_notification', '_create_company', 'billing']) %}
 
-{% block user_menu_items %}
-    <a href="{{ path('_profile') }}" class="dropdown-item">
-        {{ ux_icon('tabler:user', {width: 16, height: 16}) }}
-        {{ 'layout.profile'|trans }}
-    </a>
-    <div class="dropdown-divider"></div>
-    <a href="{{ path('_api_keys_index') }}" class="dropdown-item">
-        {{ ux_icon('tabler:lock', {width: 16, height: 16}) }}
-        {{ 'layout.api_keys'|trans }}
-    </a>
-    <a href="{{ path('_export_list') }}" class="dropdown-item">
-        {{ ux_icon('tabler:database-export', {width: 16, height: 16}) }}
-        {{ 'layout.data_export'|trans }}
-    </a>
-    {% if not white_label() %}
-    <a href="{{ feedback_form_url }}" class="dropdown-item" target="_blank" rel="noopener">
-        {{ ux_icon('tabler:message-circle', {width: 16, height: 16}) }}
-        {{ 'layout.feedback'|trans }}
-    </a>
+{% block navbar %}{% endblock navbar %}
+
+{% block page_header %}
+    {% set ws_title = (block('title') is defined ? block('title') : '')|trim %}
+    {% if ws_title is empty %}
+        {% set ws_title = block('page_title')|trim %}
     {% endif %}
-    <div class="dropdown-divider"></div>
-    <twig:Ui:Security:LogoutLink />
-{% endblock user_menu_items %}
+    {% set ws_pretitle = block('page_pretitle')|trim %}
+    {% set ws_actions = ((block('heading') is defined ? block('heading') : '') ~ block('page_title_actions'))|trim %}
+    {% if ws_title is not empty or ws_actions is not empty %}
+        <div class="ws-page-header d-print-none">
+            <div class="ws-page-title">
+                {% if ws_pretitle is not empty %}
+                    <span class="ws-page-pretitle">{{ ws_pretitle|raw }}</span>
+                    <span class="ws-page-title-separator" aria-hidden="true">/</span>
+                {% endif %}
+                <h1>{{ ws_title|raw }}</h1>
+            </div>
+            {% if ws_actions is not empty %}
+                <div class="ws-page-actions">{{ ws_actions|raw }}</div>
+            {% endif %}
+        </div>
+    {% endif %}
+{% endblock page_header %}
 
 {% block footer %}
+    <footer class="footer d-print-none">
     {% if white_label() %}
     <small>&copy; {{ 'now'|date('Y') }} {{ company_name() }}</small>
     {% else %}
     <small>{{ "layout.powered_by"|trans }} <a href="https://solidinvoice.co">{{ constant('SolidInvoice\\CoreBundle\\SolidInvoiceCoreBundle::APP_NAME') }}</a>{% if app_version %} - {{ app_version }}{% endif %} &middot; <a href="{{ feedback_form_url }}" target="_blank" rel="noopener">{{ 'layout.feedback'|trans }}</a>{% if affiliate_program().enabled %} &middot; <a href="{{ path('_profile_affiliate', {source: 'footer'}) }}" class="text-secondary">{{ 'affiliate.footer_link'|trans }}</a>{% endif %}</small>
     {% endif %}
+    </footer>
 {% endblock footer %}
 
-{#
- # Navigation laid out like Twenty's drawer: a compact workspace row, a section label, one row
- # per section (see templates/bundles/SolidWorxPlatformBundle/Menu/menu.html.twig).
- #
- # Below the lg breakpoint the sidebar is a slim top bar (menu button, workspace, create, user)
- # and the navigation slides in from the left over the page, with a backdrop, instead of
- # unfolding inline and pushing the page down. Above it, the same drawer is the fixed sidebar.
- #}
 {% block sidebar %}
-    <aside class="navbar navbar-vertical navbar-expand-lg ws-sidebar">
-        <div class="container-fluid">
-            <div class="ws-mobile-bar d-lg-none">
-                <button class="ws-icon-button" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar-menu" aria-controls="sidebar-menu" aria-label="{{ 'layout.aria.open_navigation'|trans }}">
-                    {{ ux_icon('tabler:menu-2', {width: 20, height: 20}) }}
+    {%- set ws_route = app.request.attributes.get('_route')|default('') -%}
+    {%- set ws_in_settings = false -%}
+    {%- for prefix in ws_settings_route_prefixes -%}
+        {%- if ws_route starts with prefix -%}{%- set ws_in_settings = true -%}{%- endif -%}
+    {%- endfor -%}
+
+    <aside class="navbar navbar-vertical navbar-expand-lg ws-sidebar d-print-none">
+        <div class="offcanvas-lg offcanvas-start ws-drawer" tabindex="-1" id="sidebar-menu" aria-label="{{ company_name() }}">
+            <div class="ws-drawer-header">
+                {{ block('sidebar_brand') }}
+                <button type="button" class="ws-icon-button d-lg-none" data-bs-dismiss="offcanvas" data-bs-target="#sidebar-menu" aria-label="{{ 'layout.aria.close_navigation'|trans }}">
+                    {{ ux_icon('tabler:x', {width: 16, height: 16}) }}
                 </button>
-                <a href="{{ path('_dashboard') }}" class="ws-workspace ws-workspace--bar text-decoration-none">
-                    <span class="ws-workspace-logo">{{ app_logo(showDefault: true) }}</span>
-                    <span class="ws-workspace-name">{{ company_name() }}</span>
-                </a>
-                <div class="ws-mobile-actions navbar-nav flex-row">
-                    {{ block('user_menu') }}
+            </div>
+
+            <div class="ws-drawer-modes" role="tablist" aria-label="{{ 'layout.nav.modes'|trans }}">
+                <button type="button" class="ws-mode{{ ws_in_settings ? '' : ' active' }}" id="ws-mode-home" data-bs-toggle="tab" data-bs-target="#ws-pane-home" role="tab" aria-controls="ws-pane-home" aria-selected="{{ ws_in_settings ? 'false' : 'true' }}" title="{{ 'layout.nav.home'|trans }}">
+                    {{ ux_icon('tabler:home', {width: 16, height: 16}) }}
+                    <span class="ws-mode-label">{{ 'layout.nav.home'|trans }}</span>
+                </button>
+                <button type="button" class="ws-mode{{ ws_in_settings ? ' active' }}" id="ws-mode-settings" data-bs-toggle="tab" data-bs-target="#ws-pane-settings" role="tab" aria-controls="ws-pane-settings" aria-selected="{{ ws_in_settings ? 'true' : 'false' }}" title="{{ 'layout.nav.settings'|trans }}">
+                    {{ ux_icon('tabler:settings', {width: 16, height: 16}) }}
+                    <span class="ws-mode-label">{{ 'layout.nav.settings'|trans }}</span>
+                </button>
+            </div>
+
+            <div class="tab-content ws-drawer-content">
+                <div class="tab-pane{{ ws_in_settings ? '' : ' active show' }}" id="ws-pane-home" role="tabpanel" aria-labelledby="ws-mode-home">
+                    {% toggle 'meilisearch_search' %}
+                        <ul class="navbar-nav ws-fixed-rows">
+                            <li class="nav-item">
+                                <button type="button" class="nav-link" data-bs-toggle="modal" data-bs-target="#ws-search-modal">
+                                    <span class="nav-link-icon">{{ ux_icon('tabler:search') }}</span>
+                                    <span class="nav-link-title">{{ 'layout.nav.search'|trans }}</span>
+                                </button>
+                            </li>
+                        </ul>
+                    {% endtoggle %}
+                    <div class="ws-section-title">{{ 'menu.workspace'|trans }}</div>
+                    {% if menu_exists('sidebar') %}
+                        {{ render_menu('sidebar', {ws_part: 'main', root_class: 'navbar-nav'}) }}
+                    {% endif %}
+                </div>
+
+                <div class="tab-pane{{ ws_in_settings ? ' active show' }}" id="ws-pane-settings" role="tabpanel" aria-labelledby="ws-mode-settings">
+                    {{ block('ws_settings_navigation') }}
                 </div>
             </div>
 
-            <div class="offcanvas-lg offcanvas-start ws-drawer" tabindex="-1" id="sidebar-menu" aria-label="{{ company_name() }}">
-                <div class="ws-drawer-head">
-                    {{ block('sidebar_brand') }}
-                    <button type="button" class="ws-icon-button d-lg-none" data-bs-dismiss="offcanvas" data-bs-target="#sidebar-menu" aria-label="{{ 'layout.aria.close_navigation'|trans }}">
-                        {{ ux_icon('tabler:x', {width: 18, height: 18}) }}
-                    </button>
-                </div>
+            {{ block('sidebar_footer') }}
+        </div>
+    </aside>
 
-                {# Switching company lives in the drawer on phones; the top bar keeps create and the user. #}
-                <div class="ws-drawer-switcher d-lg-none navbar-nav">
-                    {% include '@SolidInvoiceCore/Menu/company_switcher.html.twig' %}
-                    {{ block('workspace_switcher') }}
-                </div>
+    {{ block('ws_mobile_bar') }}
 
-                <div class="ws-drawer-body">
-                    <div class="ws-section-label">{{ 'menu.workspace'|trans }}</div>
-                    {% if menu_exists('sidebar') %}
-                        {{ render_menu('sidebar', {ws_sections: true, root_class: 'navbar-nav'}) }}
-                    {% endif %}
-                    {{ block('sidebar_footer') }}
+    {% toggle 'meilisearch_search' %}
+        <div class="modal fade ws-search-modal" id="ws-search-modal" tabindex="-1" aria-label="{{ 'layout.nav.search'|trans }}" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    {% include "@SolidInvoiceCore/Menu/search.html.twig" %}
                 </div>
             </div>
         </div>
-    </aside>
+    {% endtoggle %}
 {% endblock sidebar %}
 
+{#
+ # Twenty's workspace menu: the logo and name with a chevron. It opens the list of the other
+ # companies to switch to, "add a company", then logging out.
+ #}
 {% block sidebar_brand %}
-    {# Twenty's workspace row: a small square logo and the name on one line, truncated. #}
-    <a href="{{ path('_dashboard') }}" class="ws-workspace text-decoration-none" title="{{ company_name() }}">
-        <span class="ws-workspace-logo">{{ app_logo(showDefault: true) }}</span>
-        <span class="ws-workspace-name">{{ company_name() }}</span>
-    </a>
+    <div class="dropdown ws-workspace">
+        <button type="button" class="ws-workspace-button" data-bs-toggle="dropdown" aria-expanded="false" title="{{ company_name() }}">
+            <span class="ws-workspace-logo">{{ app_logo(showDefault: true) }}</span>
+            <span class="ws-workspace-name">{{ company_name() }}</span>
+            {{ ux_icon('tabler:chevron-down', {width: 14, height: 14, class: 'ws-workspace-chevron'}) }}
+        </button>
+        <div class="dropdown-menu ws-menu">
+            <div class="ws-menu-current">
+                <span class="ws-workspace-logo">{{ app_logo(showDefault: true) }}</span>
+                <span class="ws-workspace-name">{{ company_name() }}</span>
+            </div>
+            {% if not is_custom_domain() %}
+                {% set ws_other_companies = app.user.companies|filter(v => not v.id.equals(company_id())) %}
+                {% if ws_other_companies|length > 0 %}
+                    <div class="dropdown-divider"></div>
+                    {% for company in ws_other_companies %}
+                        <a href="{{ path('_switch_company', {'id': company.id}) }}" class="dropdown-item">
+                            {{ ux_icon('tabler:building', {width: 16, height: 16}) }}
+                            {{ company }}
+                        </a>
+                    {% endfor %}
+                {% endif %}
+                <div class="dropdown-divider"></div>
+                <a href="{{ path('_create_company') }}" class="dropdown-item">
+                    {{ ux_icon('tabler:plus', {width: 16, height: 16}) }}
+                    {{ 'layout.add_company'|trans }}
+                </a>
+            {% endif %}
+            <div class="dropdown-divider"></div>
+            {% set ws_logout_class = 'dropdown-item' %}
+            {{ block('ws_logout') }}
+            {% set ws_logout_class = 'nav-link' %}
+        </div>
+    </div>
 {% endblock sidebar_brand %}
+
+{#
+ # Settings mode, grouped like Twenty's: the user's own pages, the workspace's, then the rest.
+ # The workspace rows come from the "System" section of the sidebar menu, so a bundle adding an
+ # entry there (billing, for instance) shows up here.
+ #}
+{% block ws_settings_navigation %}
+    {%- set ws_route = app.request.attributes.get('_route')|default('') -%}
+    {%- set ws_on_user_page = false -%}
+    {%- for prefix in ws_user_route_prefixes -%}
+        {%- if ws_route starts with prefix -%}{%- set ws_on_user_page = true -%}{%- endif -%}
+    {%- endfor -%}
+    <div class="ws-section-title">{{ 'layout.nav.user'|trans }}</div>
+    <ul class="navbar-nav">
+        <li class="nav-item{{ ws_on_user_page ? ' active' }}">
+            <a class="nav-link" href="{{ path('_profile') }}">
+                <span class="nav-link-icon">{{ ux_icon('tabler:user-circle') }}</span>
+                <span class="nav-link-title">{{ 'layout.profile'|trans }}</span>
+            </a>
+        </li>
+    </ul>
+
+    <div class="ws-section-title">{{ 'menu.workspace'|trans }}</div>
+    {% if menu_exists('sidebar') %}
+        {{ render_menu('sidebar', {ws_part: 'settings', root_class: 'navbar-nav'}) }}
+    {% endif %}
+
+    <div class="ws-section-title">{{ 'layout.nav.other'|trans }}</div>
+    <ul class="navbar-nav">
+        {% if not white_label() %}
+            <li class="nav-item">
+                <a class="nav-link" href="{{ feedback_form_url }}" target="_blank" rel="noopener">
+                    <span class="nav-link-icon">{{ ux_icon('tabler:message-circle') }}</span>
+                    <span class="nav-link-title">{{ 'layout.feedback'|trans }}</span>
+                </a>
+            </li>
+        {% endif %}
+        <li class="nav-item">
+            {{ block('ws_logout') }}
+        </li>
+    </ul>
+{% endblock ws_settings_navigation %}
+
+{% block ws_logout %}
+    <form method="post" action="{{ logout_path() }}" class="ws-logout">
+        <input type="hidden" {{ stimulus_controller('csrf-protection') }} name="_csrf_token" value="{{ csrf_token('logout') }}"/>
+        <button type="submit" class="{{ ws_logout_class|default('nav-link') }}">
+            <span class="nav-link-icon">{{ ux_icon('tabler:logout') }}</span>
+            <span class="nav-link-title">{{ 'menu.top.logout'|trans }}</span>
+        </button>
+    </form>
+{% endblock ws_logout %}
+
+{#
+ # Phones: Twenty's floating bar at the bottom of the screen. Home and Settings open the drawer on
+ # that mode; "+" creates a client, a quote or an invoice.
+ #}
+{% block ws_mobile_bar %}
+    <nav class="ws-mobile-bar d-lg-none d-print-none" data-controller="ws-drawer" aria-label="{{ 'layout.nav.modes'|trans }}">
+        <button type="button" class="ws-mobile-button" data-bs-toggle="offcanvas" data-bs-target="#sidebar-menu" data-action="ws-drawer#mode" data-ws-drawer-mode-param="home" aria-label="{{ 'layout.nav.home'|trans }}">
+            {{ ux_icon('tabler:home', {width: 20, height: 20}) }}
+        </button>
+        {% toggle 'meilisearch_search' %}
+            <button type="button" class="ws-mobile-button" data-bs-toggle="modal" data-bs-target="#ws-search-modal" aria-label="{{ 'layout.nav.search'|trans }}">
+                {{ ux_icon('tabler:search', {width: 20, height: 20}) }}
+            </button>
+        {% endtoggle %}
+        <button type="button" class="ws-mobile-button" data-bs-toggle="offcanvas" data-bs-target="#sidebar-menu" data-action="ws-drawer#mode" data-ws-drawer-mode-param="settings" aria-label="{{ 'layout.nav.settings'|trans }}">
+            {{ ux_icon('tabler:settings', {width: 20, height: 20}) }}
+        </button>
+        <span class="ws-mobile-divider" aria-hidden="true"></span>
+        <div class="dropup">
+            <button type="button" class="ws-mobile-button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="{{ 'layout.aria.open_create_menu'|trans }}">
+                {{ ux_icon('tabler:plus', {width: 20, height: 20}) }}
+            </button>
+            <div class="dropdown-menu ws-menu">
+                <a href="{{ path('_clients_add') }}" class="dropdown-item">
+                    {{ ux_icon('tabler:user-plus', {width: 16, height: 16}) }}
+                    {{ 'dashboard.create.client'|trans }}
+                </a>
+                <a href="{{ path('_quotes_create') }}" class="dropdown-item">
+                    {{ ux_icon('tabler:file-text', {width: 16, height: 16}) }}
+                    {{ 'dashboard.create.quote'|trans }}
+                </a>
+                <a href="{{ path('_invoices_create') }}" class="dropdown-item">
+                    {{ ux_icon('tabler:file-invoice', {width: 16, height: 16}) }}
+                    {{ 'dashboard.create.invoice'|trans }}
+                </a>
+            </div>
+        </div>
+    </nav>
+{% endblock ws_mobile_bar %}
