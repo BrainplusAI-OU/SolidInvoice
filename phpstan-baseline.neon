@@ -85,6 +85,18 @@ parameters:
 			path: src/CoreBundle/Traits/Entity/TimeStampable.php
 
 		-
+			message: '#^Property SolidInvoice\\UserBundle\\Entity\\UserGridPreference\:\:\$created type mapping mismatch\: property can contain DateTimeImmutable\|null but database expects DateTimeImmutable\.$#'
+			identifier: doctrine.columnType
+			count: 1
+			path: src/CoreBundle/Traits/Entity/TimeStampable.php
+
+		-
+			message: '#^Property SolidInvoice\\UserBundle\\Entity\\UserGridPreference\:\:\$updated type mapping mismatch\: property can contain DateTimeImmutable\|null but database expects DateTimeImmutable\.$#'
+			identifier: doctrine.columnType
+			count: 1
+			path: src/CoreBundle/Traits/Entity/TimeStampable.php
+
+		-
 			message: '#^Access to constant NAME on an unknown class Ramsey\\Uuid\\Doctrine\\UuidBinaryOrderedTimeType\.$#'
 			identifier: class.notFound
 			count: 1
