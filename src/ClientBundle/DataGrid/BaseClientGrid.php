@@ -13,8 +13,10 @@ declare(strict_types=1);
 
 namespace SolidInvoice\ClientBundle\DataGrid;
 
-use Brick\Math\BigInteger;
+use Brick\Math\BigNumber;
 use Doctrine\ORM\EntityManagerInterface;
+use Money\Currency;
+use Money\Money;
 use Override;
 use SolidInvoice\ClientBundle\Entity\Client;
 use SolidInvoice\ClientBundle\Repository\ClientRepository;
@@ -33,9 +35,15 @@ use SolidInvoice\DataGridBundle\GridBuilder\Filter\ChoiceFilter;
 use SolidInvoice\DataGridBundle\GridBuilder\Filter\DateRangeFilter;
 use SolidInvoice\DataGridBundle\GridBuilder\Query;
 use SolidInvoice\DataGridBundle\Source\ORMSource;
+use SolidInvoice\InvoiceBundle\Entity\Invoice;
 use SolidInvoice\InvoiceBundle\Enum\InvoiceStatus;
 use Symfony\Component\Intl\Currencies;
 use Symfony\Component\Translation\TranslatableMessage;
+use function array_filter;
+use function array_values;
+use function count;
+use function in_array;
+use function reset;
 
 abstract class BaseClientGrid extends Grid
 {
@@ -62,37 +70,65 @@ abstract class BaseClientGrid extends Grid
                 ->label(new TranslatableMessage('client.grid.total_balance'))
                 ->sortable(false)
                 ->searchable(false)
-                ->formatValue(static function ($value, Client $client) {
-                    $total = BigInteger::zero();
-
-                    foreach ($client->getInvoices() as $invoice) {
-                        if (
-                            in_array($invoice->getStatus(), [InvoiceStatus::Paid, InvoiceStatus::Pending, InvoiceStatus::Overdue], true)
-                        ) {
-                            $total = $total->plus($invoice->getTotal());
-                        }
-                    }
-
-                    return $total;
-                }),
+                ->formatValue(static fn ($value, Client $client): Money | array => self::sumByCurrency(
+                    array_filter(
+                        $client->getInvoices()->toArray(),
+                        static fn (Invoice $invoice): bool => in_array($invoice->getStatus(), [InvoiceStatus::Paid, InvoiceStatus::Pending, InvoiceStatus::Overdue], true),
+                    ),
+                    static fn (Invoice $invoice): BigNumber => $invoice->getTotal(),
+                    $client,
+                )),
             MoneyColumn::new('outstanding')
                 ->label(new TranslatableMessage('client.grid.outstanding_balance'))
                 ->sortable(false)
                 ->searchable(false)
-                ->formatValue(static function ($value, Client $client) {
-                    $totalOutstanding = BigInteger::zero();
-
-                    foreach ($client->getOutstandingInvoices() as $invoice) {
-                        $totalOutstanding = $totalOutstanding->plus($invoice->getBalance());
-                    }
-
-                    return $totalOutstanding;
-                }),
+                ->formatValue(static fn ($value, Client $client): Money | array => self::sumByCurrency(
+                    $client->getOutstandingInvoices(),
+                    static fn (Invoice $invoice): BigNumber => $invoice->getBalance(),
+                    $client,
+                )),
             DateTimeColumn::new('created')
                 ->label('label.created')
                 ->format('d F Y')
                 ->filter(new DateRangeFilter('created')),
         ];
+    }
+
+    /**
+     * Sums invoice amounts per currency. Each invoice is counted in its own currency
+     * (frozen once issued, else the client's), never in the system currency: a euro
+     * client's balance was shown as the same figure in baht. A single currency gives
+     * one Money; several give one Money per currency, which the money formatter and the
+     * export both understand.
+     *
+     * @param iterable<Invoice>               $invoices
+     * @param callable(Invoice): BigNumber    $amount
+     *
+     * @return Money|list<Money>
+     */
+    public static function sumByCurrency(iterable $invoices, callable $amount, Client $client): Money | array
+    {
+        /** @var array<string, Money> $sums */
+        $sums = [];
+
+        foreach ($invoices as $invoice) {
+            $code = $invoice->resolveCurrencyCode() ?? $client->getCurrencyCode();
+
+            if ($code === null) {
+                continue;
+            }
+
+            $money = new Money((string) $amount($invoice)->toBigInteger(), new Currency($code));
+            $sums[$code] = isset($sums[$code]) ? $sums[$code]->add($money) : $money;
+        }
+
+        if ($sums === []) {
+            $code = $client->getCurrencyCode();
+
+            return $code === null ? [] : new Money(0, new Currency($code));
+        }
+
+        return count($sums) === 1 ? reset($sums) : array_values($sums);
     }
 
     /**
