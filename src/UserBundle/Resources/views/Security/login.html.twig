@@ -16,6 +16,7 @@
 
     {{ encore_entry_link_tags('app') }}
     {{ encore_entry_link_tags('login') }}
+    {{ include('@SolidInvoiceUser/Security/_login_background.html.twig') }}
 {% endblock stylesheets %}
 
 {% block social_login %}
@@ -36,10 +37,7 @@
 {% endblock social_login %}
 
 {% block brand %}
-    <span class="text-white h1">
-        {{ app_logo(showDefault: true, showOnlyAppIcon: true) }} {{ app_name }}
-    </span>
-
+    {{ include('@SolidInvoiceUser/Security/_brand.html.twig') }}
 {% endblock brand %}
 
 {% block content %}
