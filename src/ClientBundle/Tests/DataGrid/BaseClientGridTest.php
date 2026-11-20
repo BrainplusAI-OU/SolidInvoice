@@ -41,7 +41,8 @@ final class BaseClientGridTest extends TestCase
     public function testAnIssuedInvoiceKeepsItsFrozenCurrency(): void
     {
         $client = (new Client())->setCurrencyCode('EUR');
-        $frozen = $this->invoice($client, 4500000)->setCurrencyCode('THB');
+        $frozen = $this->invoice($client, 4500000);
+        $frozen->setCurrencyCode('THB');
 
         $sum = BaseClientGrid::sumByCurrency(
             [$this->invoice($client, 1000000), $frozen],
