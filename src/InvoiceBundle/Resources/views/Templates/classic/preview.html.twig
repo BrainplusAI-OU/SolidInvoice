@@ -13,7 +13,7 @@
                     <h2 class="mb-0">{{ company_name() }}</h2>
                 </div>
                 <div class="col-6 text-end">
-                    <div class="text-uppercase small text-muted" style="letter-spacing: 2px;">{{ 'invoice.pdf.title'|trans }}</div>
+                    <div class="text-uppercase small text-muted" style="letter-spacing: 2px;">{{ invoice_title_key(invoice)|trans }}</div>
                     <div class="display-6 fw-bold">#{{ invoice.invoiceId }}</div>
                 </div>
             </div>

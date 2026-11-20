@@ -82,6 +82,7 @@ final class IssueCreditNoteTest extends KernelTestCase
 
     public function testTheDocumentShowsWhatThaiLawAsksOfACreditNote(): void
     {
+        $this->company->setCountry('TH');
         $invoice = $this->issuedInvoice();
         $issuer = self::getContainer()->get(CreditNoteIssuer::class);
         self::assertInstanceOf(CreditNoteIssuer::class, $issuer);
@@ -91,7 +92,7 @@ final class IssueCreditNoteTest extends KernelTestCase
         self::assertInstanceOf(Environment::class, $twig);
         $html = $twig->render('@SolidInvoiceInvoice/CreditNote/pdf.html.twig', ['creditNote' => $creditNote, 'invoice' => $invoice]);
 
-        self::assertStringContainsString('ใบลดหนี้', $html);
+        self::assertStringContainsString('Credit note · ใบลดหนี้', $html);
         self::assertStringContainsString('#CN-2026-0001', $html);
         self::assertStringContainsString('#2026-0001', $html);
         self::assertStringContainsString('Two days not delivered', $html);

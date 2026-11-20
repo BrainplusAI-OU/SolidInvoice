@@ -147,6 +147,24 @@ final class TemplatesRenderingTest extends KernelTestCase
     }
 
     /**
+     * Thai law asks a business that charges VAT for a ใบกำกับภาษี, titled as such in Thai.
+     */
+    #[DataProvider('pdfTemplateProvider')]
+    public function testAThaiCompanyChargingVatIssuesATaxInvoice(string $slug): void
+    {
+        $this->company->setCountry('TH');
+        $invoice = $this->createFixtureInvoice();
+        // In memory only: the fixture lines carry no tax, and a flush would recalculate it away.
+        $invoice->setTax(10500);
+
+        self::assertStringContainsString('ใบกำกับภาษี', $this->renderInvoicePdf($slug, $invoice));
+
+        $invoice->setTax(0);
+
+        self::assertStringNotContainsString('ใบกำกับภาษี', $this->renderInvoicePdf($slug, $invoice));
+    }
+
+    /**
      * @return iterable<string, array{string}>
      */
     public static function pdfTemplateProvider(): iterable

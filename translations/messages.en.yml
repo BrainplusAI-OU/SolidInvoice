@@ -273,8 +273,8 @@ credit_note:
         payable: 'Reduction of the amount payable'
         reason: 'Reason for the credit note'
         tax: 'VAT on the difference'
-        thai_title: ใบลดหนี้
         title: 'Credit note'
+        title_th: 'Credit note · ใบลดหนี้'
         total: 'Total credited'
         withholding: 'Tax no longer withheld'
     view:
@@ -1105,6 +1105,7 @@ invoice:
         payment_description: 'Click the button or visit the URL below to pay securely online.'
         payment_title: 'Pay This Invoice Online'
         payment_url_label: 'Payment URL'
+        tax_invoice_th: 'TAX INVOICE · ใบกำกับภาษี'
         title: INVOICE
     recurring:
         activate_start: 'Activate and Start'
