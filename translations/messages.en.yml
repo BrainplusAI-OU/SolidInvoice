@@ -1346,8 +1346,10 @@ layout:
     add_company: 'Add Company'
     api_keys: 'API Keys'
     aria:
+        close_navigation: 'Close navigation'
         logo: Tabler
         open_create_menu: 'Open create menu'
+        open_navigation: 'Open navigation'
         open_user_menu: 'Open user menu'
     data_export: 'Data Export'
     feedback: 'Share feedback'
