@@ -53,7 +53,7 @@
 {% block sidebar_brand %}
     <div class="navbar-brand">
         {# Logo above the name: beside it, a long company name wrapped one word per line. #}
-        <a href="{{ path('_dashboard') }}" aria-label="{{ company_name() }}" class="d-flex flex-column align-items-center text-center text-decoration-none link-white">
+        <a href="{{ path('_dashboard') }}" aria-label="{{ company_name() }}" class="sidebar-brand-stacked d-flex flex-column align-items-center text-center text-decoration-none link-white">
             {{ app_logo(showDefault: true) }}
             <span class="d-block fs-5 fw-medium text-wrap lh-sm px-2 mt-1">
                 {{ company_name() }}
