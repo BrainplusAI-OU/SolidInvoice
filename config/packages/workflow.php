@@ -90,7 +90,7 @@ return App::config([
                             'to' => [InvoiceStatus::Archived->value],
                         ],
                         [
-                            'name' => 'edit',
+                            'name' => InvoiceGraph::TRANSITION_EDIT,
                             'from' => [InvoiceStatus::Cancelled->value, InvoiceStatus::Draft->value, InvoiceStatus::Pending->value, InvoiceStatus::Overdue->value],
                             'to' => [InvoiceStatus::Draft->value],
                         ],

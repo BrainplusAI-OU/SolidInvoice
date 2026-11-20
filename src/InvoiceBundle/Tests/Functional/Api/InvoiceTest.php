@@ -293,6 +293,24 @@ final class InvoiceTest extends ApiTestCase
         ], $data);
     }
 
+    public function testAnIssuedInvoiceCannotBeEditedOrDeleted(): void
+    {
+        $invoice = InvoiceFactory::createOne([
+            'client' => ClientFactory::createOne(),
+            'status' => InvoiceStatus::Pending,
+            'currencyCode' => 'USD',
+        ]);
+
+        self::$client->request('PATCH', $this->getIriFromResource($invoice), [
+            'json' => ['terms' => 'Changed after issue'],
+            'headers' => ['content-type' => 'application/merge-patch+json', 'accept' => 'application/ld+json'],
+        ]);
+        self::assertResponseStatusCodeSame(403);
+
+        self::$client->request('DELETE', $this->getIriFromResource($invoice));
+        self::assertResponseStatusCodeSame(403);
+    }
+
     public function testEdit(): void
     {
         $client = ClientFactory::createOne();
@@ -303,6 +321,7 @@ final class InvoiceTest extends ApiTestCase
             'client' => $client,
             'due' => CarbonImmutable::parse('2005-01-20'),
             'paidDate' => null,
+            'status' => InvoiceStatus::Draft,
             'users' => $contacts,
             'lines' => [
                 new Line()

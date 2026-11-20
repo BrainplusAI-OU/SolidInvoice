@@ -970,6 +970,7 @@ invoice:
     custom_fields: 'Custom fields'
     date: 'Invoice Date'
     edit:
+        issued: 'This invoice has been issued and can no longer be changed. Issue a credit note to correct it.'
         paid: "You can't edit invoices that is already paid"
         success: 'Invoice updated successfully'
         title: 'Edit Invoice'

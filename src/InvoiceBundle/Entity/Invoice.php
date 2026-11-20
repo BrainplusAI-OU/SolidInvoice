@@ -93,8 +93,14 @@ use Symfony\Component\Validator\Constraints as Assert;
         new GetCollection(),
         new Get(),
         new Post(extraProperties: ['idempotent' => true]),
-        new Patch(),
-        new Delete(),
+        new Patch(
+            securityPostDenormalize: '! previous_object.isIssued()',
+            securityPostDenormalizeMessage: 'An issued invoice cannot be changed. Issue a credit note to correct it.',
+        ),
+        new Delete(
+            security: '! object.isIssued()',
+            securityMessage: 'An issued invoice cannot be deleted. Issue a credit note to cancel it.',
+        ),
         new GetCollection(
             uriTemplate: '/clients/{clientId}/invoices',
             uriVariables: [
@@ -533,6 +539,22 @@ class Invoice extends BaseInvoice implements Stringable
     public function retainsFrozenCurrency(): bool
     {
         return ! $this->payments->isEmpty();
+    }
+
+    /**
+     * Whether the invoice has been issued to the client. An issued invoice is a legal document:
+     * it cannot be edited, sent back to draft, reopened or deleted, only corrected by a credit note.
+     * A cancelled or archived invoice counts as issued when its currency was frozen on issue
+     * ({@see \SolidInvoice\CoreBundle\Listener\FreezeCurrencyListener}); one cancelled while
+     * still a draft never was.
+     */
+    public function isIssued(): bool
+    {
+        return match ($this->getStatus()) {
+            InvoiceStatus::Pending, InvoiceStatus::Overdue, InvoiceStatus::Paid => true,
+            InvoiceStatus::Cancelled, InvoiceStatus::Archived => $this->getCurrencyCode() !== null,
+            default => false,
+        };
     }
 
     public function getQuote(): ?Quote
