@@ -52,4 +52,39 @@ final class BrandTest extends TestCase
         self::assertNull(new Brand('Palmora', '/does/not/exist.png')->getLogo());
         self::assertNull(new Brand('Palmora', $text)->getLogo());
     }
+
+    public function testTheLogoIsShownAloneOnlyForAWhiteLabelWithALogo(): void
+    {
+        $logo = sys_get_temp_dir() . '/brand-' . uniqid() . '.svg';
+        file_put_contents($logo, '<svg/>');
+
+        self::assertTrue(new Brand('Palmora', $logo)->showsLogoOnly());
+        self::assertFalse(new Brand('Palmora')->showsLogoOnly());
+        self::assertFalse(new Brand('', $logo)->showsLogoOnly());
+    }
+
+    public function testTheLoginBackgroundIsReadAsADataUri(): void
+    {
+        $photo = sys_get_temp_dir() . '/login-' . uniqid() . '.jpg';
+        file_put_contents($photo, 'jpeg');
+
+        self::assertSame('data:image/jpeg;base64,' . base64_encode('jpeg'), new Brand('', '', $photo)->getLoginBackground());
+        self::assertNull(new Brand()->getLoginBackground());
+        self::assertNull(new Brand('', '', '/does/not/exist.jpg')->getLoginBackground());
+    }
+
+    public function testAnSvgLoginBackgroundIsRefused(): void
+    {
+        $svg = sys_get_temp_dir() . '/login-' . uniqid() . '.svg';
+        file_put_contents($svg, '<svg/>');
+
+        self::assertNull(new Brand('', '', $svg)->getLoginBackground());
+    }
+
+    public function testTheCreditLinkMustBeAnHttpUrl(): void
+    {
+        self::assertSame('Photo: Roma Neus, CC BY 3.0', new Brand('', '', '', ' Photo: Roma Neus, CC BY 3.0 ')->getLoginBackgroundCredit());
+        self::assertSame('https://commons.wikimedia.org/', new Brand('', '', '', '', 'https://commons.wikimedia.org/')->getLoginBackgroundCreditUrl());
+        self::assertSame('', new Brand('', '', '', '', 'javascript:alert(1)')->getLoginBackgroundCreditUrl());
+    }
 }

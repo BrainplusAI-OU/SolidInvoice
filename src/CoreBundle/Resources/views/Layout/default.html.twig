@@ -52,11 +52,12 @@
 
 {% block sidebar_brand %}
     <div class="navbar-brand">
-        <a href="{{ path('_dashboard') }}" aria-label="{{ company_name() }}" class="d-flex align-items-center text-decoration-none link-white">
+        {# Logo above the name: beside it, a long company name wrapped one word per line. #}
+        <a href="{{ path('_dashboard') }}" aria-label="{{ company_name() }}" class="d-flex flex-column align-items-center text-center text-decoration-none link-white">
             {{ app_logo(showDefault: true) }}
-            <small class="d-flex flex-column text-wrap lh-sm text-start">
+            <span class="d-block fs-5 fw-medium text-wrap lh-sm px-2 mt-1">
                 {{ company_name() }}
-            </small>
+            </span>
         </a>
     </div>
 {% endblock sidebar_brand %}
