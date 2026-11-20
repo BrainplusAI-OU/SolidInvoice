@@ -75,6 +75,16 @@
             <td style="{{ cell }} font-weight: bold;">{{ 'credit_note.pdf.total'|trans }}</td>
             <td style="{{ amountCell }} font-weight: bold;">{{ creditNote.total|formatCurrency(currency) }}</td>
         </tr>
+        {% if invoice.exchangeRate is not null and invoice.exchangeRateCurrency is not null %}
+            <tr>
+                <td style="{{ cell }}">{{ 'invoice.exchange_rate.tax'|trans({'%base%': invoice.exchangeRateCurrency}) }}</td>
+                <td style="{{ amountCell }}">{{ in_exchange_rate_currency(invoice, creditNote.tax)|formatCurrency(invoice.exchangeRateCurrency) }}</td>
+            </tr>
+            <tr>
+                <td style="{{ cell }}">{{ 'invoice.exchange_rate.total'|trans({'%base%': invoice.exchangeRateCurrency}) }}</td>
+                <td style="{{ amountCell }}">{{ in_exchange_rate_currency(invoice, creditNote.total)|formatCurrency(invoice.exchangeRateCurrency) }}</td>
+            </tr>
+        {% endif %}
         {% if creditNote.withholding.isPositive %}
             <tr>
                 <td style="{{ cell }}">{{ 'credit_note.pdf.withholding'|trans }}</td>

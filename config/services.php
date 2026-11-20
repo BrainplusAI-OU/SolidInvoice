@@ -40,6 +40,7 @@ return static function (ContainerConfigurator $containerConfigurator): void {
     $parameters->set('env(SOLIDINVOICE_CUSTOM_DOMAIN_DNS_RECORD)', '');
     $parameters->set('env(SOLIDINVOICE_LOCK_DSN)', 'flock');
     $parameters->set('env(SOLIDINVOICE_BRAND_NAME)', '');
+    $parameters->set('env(SOLIDINVOICE_EXCHANGE_RATE_URL)', 'https://api.frankfurter.app');
     $parameters->set('env(SOLIDINVOICE_BRAND_LOGO)', '');
     $parameters->set('env(SOLIDINVOICE_RUNTIME)', null);
     $parameters->set('env(SOLIDINVOICE_ALLOW_REGISTRATION)', false);

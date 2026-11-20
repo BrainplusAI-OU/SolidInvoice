@@ -295,6 +295,35 @@ class Invoice extends BaseInvoice implements Stringable
     private Collection $payments;
 
     /**
+     * How many units of `exchangeRateCurrency`, the company's own currency, one unit of the
+     * invoice currency was worth on `exchangeRateDate`. Set when an invoice in another currency
+     * is issued, so the tax invoice can state its amounts in the currency the tax is declared in.
+     */
+    #[ORM\Column(name: 'exchange_rate', type: Types::DECIMAL, precision: 20, scale: 8, nullable: true)]
+    #[Groups(['invoice_api:read', 'invoice_api:write'])]
+    #[ApiProperty(example: '32.45670000')]
+    private ?string $exchangeRate = null;
+
+    #[ORM\Column(name: 'exchange_rate_currency', type: Types::STRING, length: 3, nullable: true)]
+    #[Assert\Currency]
+    #[Groups(['invoice_api:read', 'invoice_api:write'])]
+    #[ApiProperty(example: 'THB')]
+    private ?string $exchangeRateCurrency = null;
+
+    #[ORM\Column(name: 'exchange_rate_date', type: Types::DATE_IMMUTABLE, nullable: true)]
+    #[Groups(['invoice_api:read', 'invoice_api:write'])]
+    private ?DateTimeImmutable $exchangeRateDate = null;
+
+    /**
+     * Where the rate came from: ECB when looked up, or whatever the user or API client said.
+     */
+    #[ORM\Column(name: 'exchange_rate_source', type: Types::STRING, length: 32, nullable: true)]
+    #[Assert\Length(max: 32)]
+    #[Groups(['invoice_api:read', 'invoice_api:write'])]
+    #[ApiProperty(example: 'BOT')]
+    private ?string $exchangeRateSource = null;
+
+    /**
      * @var Collection<int, CreditNote>
      */
     #[ORM\OneToMany(targetEntity: CreditNote::class, mappedBy: 'invoice')]
@@ -542,6 +571,54 @@ class Invoice extends BaseInvoice implements Stringable
     public function getPayments(): Collection
     {
         return $this->payments;
+    }
+
+    public function getExchangeRate(): ?string
+    {
+        return $this->exchangeRate;
+    }
+
+    public function setExchangeRate(?string $exchangeRate): self
+    {
+        $this->exchangeRate = $exchangeRate;
+
+        return $this;
+    }
+
+    public function getExchangeRateCurrency(): ?string
+    {
+        return $this->exchangeRateCurrency;
+    }
+
+    public function setExchangeRateCurrency(?string $exchangeRateCurrency): self
+    {
+        $this->exchangeRateCurrency = $exchangeRateCurrency;
+
+        return $this;
+    }
+
+    public function getExchangeRateDate(): ?DateTimeImmutable
+    {
+        return $this->exchangeRateDate;
+    }
+
+    public function setExchangeRateDate(?DateTimeInterface $exchangeRateDate): self
+    {
+        $this->exchangeRateDate = $exchangeRateDate instanceof DateTimeInterface ? DateTimeImmutable::createFromInterface($exchangeRateDate) : null;
+
+        return $this;
+    }
+
+    public function getExchangeRateSource(): ?string
+    {
+        return $this->exchangeRateSource;
+    }
+
+    public function setExchangeRateSource(?string $exchangeRateSource): self
+    {
+        $this->exchangeRateSource = $exchangeRateSource;
+
+        return $this;
     }
 
     /**

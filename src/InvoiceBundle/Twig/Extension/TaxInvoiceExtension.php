@@ -13,9 +13,14 @@ declare(strict_types=1);
 
 namespace SolidInvoice\InvoiceBundle\Twig\Extension;
 
+use Brick\Math\BigInteger;
+use Brick\Math\BigNumber;
+use Brick\Math\RoundingMode;
+use Money\Currency;
 use SolidInvoice\CoreBundle\Entity\Company;
 use SolidInvoice\InvoiceBundle\Entity\BaseInvoice;
 use SolidInvoice\InvoiceBundle\Entity\Invoice;
+use SolidInvoice\MoneyBundle\Currency\CurrencyScale;
 use Twig\Attribute\AsTwigFunction;
 
 /**
@@ -27,8 +32,37 @@ use Twig\Attribute\AsTwigFunction;
  *
  * @see \SolidInvoice\InvoiceBundle\Tests\Twig\Extension\TaxInvoiceExtensionTest
  */
-final class TaxInvoiceExtension
+final readonly class TaxInvoiceExtension
 {
+    public function __construct(
+        private CurrencyScale $currencyScale = new CurrencyScale(),
+    ) {
+    }
+
+    /**
+     * An amount of the invoice in the company's own currency at the rate frozen on issue, in that
+     * currency's minor units, or null when the invoice carries no rate.
+     */
+    #[AsTwigFunction(name: 'in_exchange_rate_currency')]
+    public function inExchangeRateCurrency(Invoice $invoice, BigNumber $amount): ?BigInteger
+    {
+        $rate = $invoice->getExchangeRate();
+        $base = $invoice->getExchangeRateCurrency();
+
+        if ($rate === null || $base === null) {
+            return null;
+        }
+
+        $from = $this->currencyScale->subunitFor($invoice->getCurrency());
+        $to = $this->currencyScale->subunitFor(new Currency($base));
+
+        return $amount->toBigDecimal()
+            ->multipliedBy($rate)
+            ->withPointMovedRight($to - $from)
+            ->toScale(0, RoundingMode::HalfUp)
+            ->toBigInteger();
+    }
+
     #[AsTwigFunction(name: 'is_thai_company')]
     public function isThaiCompany(BaseInvoice $document): bool
     {

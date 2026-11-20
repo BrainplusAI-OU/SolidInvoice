@@ -1008,6 +1008,10 @@ invoice:
         title: 'Edit Invoice'
     email:
         send_failed: 'Failed to send invoice email. Please verify your email configuration in Settings.'
+    exchange_rate:
+        rate: '1 %currency% = %rate% %base% (%source%, %date%)'
+        tax: 'VAT in %base%'
+        total: 'Total in %base%'
     external:
         footer:
             cta: 'Send your own invoices free'
