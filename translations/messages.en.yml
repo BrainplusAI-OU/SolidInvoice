@@ -131,13 +131,9 @@ assistant:
     overview:
         attention: 'Needs attention'
         attention_none: 'Nothing waiting. Documents not yet validated and errors appear here.'
-        denied: '{0} No refused access|{1} 1 refused access|]1,Inf[ %count% refused accesses'
-        emails: '{0} No e-mail|{1} 1 e-mail|]1,Inf[ %count% e-mails'
         failed: 'Documents failed'
         last_activity: 'last activity %date%'
         latest: 'Latest activity'
-        members: '{0} No active member|{1} 1 active member|]1,Inf[ %count% active members'
-        messages: '{0} No message|{1} 1 message|]1,Inf[ %count% messages'
         not_connected: 'This assistant has not reported anything yet. Its connection details are in'
         not_connected_title: 'Not connected yet'
         pending: 'Documents waiting'

@@ -21,6 +21,7 @@ use SolidInvoice\AssistantBundle\Entity\AssistantMember;
 use SolidInvoice\AssistantBundle\Enum\EventStatus;
 use SolidInvoice\AssistantBundle\Test\Factory\AssistantFactory;
 use SolidInvoice\AssistantBundle\Test\Factory\AssistantMemberFactory;
+use SolidInvoice\CoreBundle\Company\CompanySelector;
 use SolidInvoice\CoreBundle\Test\Factory\CompanyFactory;
 use SolidInvoice\ExpenseBundle\Test\Factory\ExpenseFactory;
 use Symfony\Component\Uid\Ulid;
@@ -129,7 +130,10 @@ final class AssistantApiTest extends ApiTestCase
 
     public function testAnotherCompanysAssistantIsOutOfReach(): void
     {
-        $other = AssistantFactory::createOne(['company' => CompanyFactory::createOne()]);
+        $otherCompany = CompanyFactory::new()->create();
+        self::getContainer()->get(CompanySelector::class)->switchCompany($otherCompany->getId());
+        $other = AssistantFactory::createOne(['company' => $otherCompany]);
+        self::getContainer()->get(CompanySelector::class)->switchCompany($this->company->getId());
 
         self::$client->request('POST', '/api/assistants/' . $other->getId() . '/events', ['json' => [
             'type' => 'message',

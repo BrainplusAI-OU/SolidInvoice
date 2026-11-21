@@ -26,6 +26,7 @@ use SolidInvoice\UserBundle\Repository\UserSettingRepositoryInterface;
 use SolidInvoice\UserBundle\Test\Factory\UserFactory;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\DomCrawler\Field\ChoiceFormField;
 use Symfony\Component\HttpFoundation\Request;
 
 #[Group('functional')]
@@ -92,7 +93,9 @@ final class AssistantWebTest extends WebTestCase
 
         $crawler = $client->request(Request::METHOD_GET, '/assistants/' . $assistant->getId() . '/members/' . $member->getId() . '/edit');
         $form = $crawler->selectButton('Save')->form();
-        $form['assistant_member[active]']->untick();
+        $active = $form['assistant_member[active]'];
+        self::assertInstanceOf(ChoiceFormField::class, $active);
+        $active->untick();
         $client->submit($form);
 
         self::assertResponseRedirects('/assistants/' . $assistant->getId() . '/members');

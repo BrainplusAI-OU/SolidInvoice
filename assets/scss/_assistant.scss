@@ -64,7 +64,8 @@
     gap: var(--tblr-space-2) var(--tblr-space-5);
     margin-bottom: var(--tblr-space-4);
 
-    > * {
+    > a,
+    > span {
         display: inline-flex;
         align-items: center;
         gap: var(--tblr-space-1);
@@ -110,10 +111,21 @@
     background: var(--tblr-surface-secondary, #f1f1f1);
     color: var(--tblr-text-muted);
 
-    &--success { color: var(--tblr-success); }
-    &--warning { color: var(--tblr-warning); }
-    &--danger { color: var(--tblr-danger); }
-    &--info { color: var(--tblr-info); }
+    &--success {
+        color: var(--tblr-success);
+    }
+
+    &--warning {
+        color: var(--tblr-warning);
+    }
+
+    &--danger {
+        color: var(--tblr-danger);
+    }
+
+    &--info {
+        color: var(--tblr-info);
+    }
 }
 
 .assistant-feed-body {

@@ -25,7 +25,6 @@ use SolidInvoice\DataGridBundle\GridBuilder\Column\Column;
 use SolidInvoice\DataGridBundle\GridBuilder\Column\DateTimeColumn;
 use SolidInvoice\DataGridBundle\GridBuilder\Column\StatusColumn;
 use SolidInvoice\DataGridBundle\GridBuilder\Column\StringColumn;
-use SolidInvoice\DataGridBundle\GridBuilder\Filter\ChoiceFilter;
 use SolidInvoice\DataGridBundle\GridBuilder\Query;
 use SolidInvoice\DataGridBundle\Source\ORMSource;
 use Symfony\Bridge\Doctrine\Types\UlidType;
@@ -62,8 +61,7 @@ final class AssistantMemberGrid extends Grid
                 ->label('label.status')
                 ->searchable(false)
                 ->statusMap(['active' => 'success', 'inactive' => 'secondary'])
-                ->formatValue(static fn (bool $active): string => $active ? 'active' : 'inactive')
-                ->filter(ChoiceFilter::new('active', ['1' => 'status.active', '0' => 'status.inactive'])),
+                ->formatValue(static fn (bool $active): string => $active ? 'active' : 'inactive'),
             StringColumn::new('payer')
                 ->label('assistant.member.form.payer')
                 ->formatValue($escape),

@@ -70,6 +70,11 @@ final class TranslationCatalogTest extends TestCase
      */
     private const array DYNAMIC_PREFIXES = [
         'messages' => [
+            'assistant.event.channel.',
+            'assistant.event.direction.',
+            'assistant.event.status.',
+            'assistant.event.type.',
+            'assistant.tab.',
             'installation.flow.',
             'installation.telemetry.',
             'invoice.recurring.days.',

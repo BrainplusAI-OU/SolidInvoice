@@ -10,7 +10,7 @@
 {% extends "@SolidInvoiceAssistant/Assistant/_layout.html.twig" %}
 
 {% block assistant_content %}
-    <p class="text-secondary mb-3">{{ ('assistant.' ~ view ~ '.intro')|trans({'%name%': assistant.name}) }}</p>
+    <p class="text-secondary mb-3">{{ {activity: 'assistant.activity.intro', conversations: 'assistant.conversations.intro', emails: 'assistant.emails.intro'}[view]|trans({'%name%': assistant.name}) }}</p>
     <twig:Ui:Card>
         <twig:DataGrid name="assistant_event_grid" :context="{ assistant_id: (assistant.id ~ ''), view: view }" />
     </twig:Ui:Card>

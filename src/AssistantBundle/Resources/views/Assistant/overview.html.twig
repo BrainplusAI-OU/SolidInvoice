@@ -62,10 +62,10 @@
     </div>
 
     <div class="assistant-counters">
-        <a href="{{ path('_assistants_conversations', {id: assistant.id}) }}">{{ ux_icon('tabler:messages', {width: 16, height: 16}) }} {{ 'assistant.overview.messages'|trans({'%count%': messages}) }}</a>
-        <a href="{{ path('_assistants_emails', {id: assistant.id}) }}">{{ ux_icon('tabler:mail', {width: 16, height: 16}) }} {{ 'assistant.overview.emails'|trans({'%count%': emails}) }}</a>
-        <a href="{{ path('_assistants_members', {id: assistant.id}) }}">{{ ux_icon('tabler:users', {width: 16, height: 16}) }} {{ 'assistant.overview.members'|trans({'%count%': members}) }}</a>
-        <span{% if denied > 0 %} class="text-danger"{% endif %}>{{ ux_icon('tabler:lock', {width: 16, height: 16}) }} {{ 'assistant.overview.denied'|trans({'%count%': denied}) }}</span>
+        <a href="{{ path('_assistants_conversations', {id: assistant.id}) }}">{{ ux_icon('tabler:messages', {width: 16, height: 16}) }} {{ 'assistant.overview.messages'|trans({count: messages}) }}</a>
+        <a href="{{ path('_assistants_emails', {id: assistant.id}) }}">{{ ux_icon('tabler:mail', {width: 16, height: 16}) }} {{ 'assistant.overview.emails'|trans({count: emails}) }}</a>
+        <a href="{{ path('_assistants_members', {id: assistant.id}) }}">{{ ux_icon('tabler:users', {width: 16, height: 16}) }} {{ 'assistant.overview.members'|trans({count: members}) }}</a>
+        <span{% if denied > 0 %} class="text-danger"{% endif %}>{{ ux_icon('tabler:lock', {width: 16, height: 16}) }} {{ 'assistant.overview.denied'|trans({count: denied}) }}</span>
     </div>
 
     <div class="assistant-columns">

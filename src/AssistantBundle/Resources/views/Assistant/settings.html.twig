@@ -36,26 +36,20 @@
             </dl>
             <table class="table table-sm assistant-endpoints">
                 <tbody>
-                    <tr>
-                        <td><code>POST</code></td>
-                        <td><code>{{ url('_api_assistants_events', {id: assistant.id}) }}</code></td>
-                        <td>{{ 'assistant.settings.endpoint.events'|trans }}</td>
-                    </tr>
-                    <tr>
-                        <td><code>GET</code></td>
-                        <td><code>{{ url('_api_assistants_members_config', {id: assistant.id}) }}</code></td>
-                        <td>{{ 'assistant.settings.endpoint.config'|trans }}</td>
-                    </tr>
-                    <tr>
-                        <td><code>PATCH</code></td>
-                        <td><code>{{ url('_api_assistants_members', {id: assistant.id}) }}/&lt;id&gt;</code></td>
-                        <td>{{ 'assistant.settings.endpoint.member'|trans }}</td>
-                    </tr>
-                    <tr>
-                        <td><code>PUT</code></td>
-                        <td><code>{{ url('_api_assistants_members', {id: assistant.id}) }}</code></td>
-                        <td>{{ 'assistant.settings.endpoint.import'|trans }}</td>
-                    </tr>
+                    {% set members_url = url('_api_assistants_members', {id: assistant.id}) %}
+                    {% set endpoints = [
+                        {method: 'POST', url: url('_api_assistants_events', {id: assistant.id}), help: 'assistant.settings.endpoint.events'},
+                        {method: 'GET', url: url('_api_assistants_members_config', {id: assistant.id}), help: 'assistant.settings.endpoint.config'},
+                        {method: 'PATCH', url: members_url ~ '/<id>', help: 'assistant.settings.endpoint.member'},
+                        {method: 'PUT', url: members_url, help: 'assistant.settings.endpoint.import'},
+                    ] %}
+                    {% for endpoint in endpoints %}
+                        <tr>
+                            <td><code>{{ endpoint.method }}</code></td>
+                            <td><code>{{ endpoint.url }}</code></td>
+                            <td>{{ endpoint.help|trans }}</td>
+                        </tr>
+                    {% endfor %}
                 </tbody>
             </table>
             <p class="text-secondary mb-1">{{ 'assistant.settings.example'|trans }}</p>
