@@ -1,0 +1,46 @@
+{#
+ # This file is part of SolidInvoice package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{% extends "@SolidInvoiceCore/Layout/default.html.twig" %}
+
+{% block title %}
+    {{ ux_icon('tabler:robot', {width: 24, height: 24, class: 'me-2'}) }}
+    {{ 'assistant.menu.main'|trans }}
+{% endblock title %}
+
+{% block heading %}
+    <a class="btn btn-primary" href="{{ path('_assistants_add') }}">
+        {{ ux_icon('tabler:plus', {width: 18, height: 18}) }}
+        {{ 'assistant.add'|trans }}
+    </a>
+{% endblock %}
+
+{% block content %}
+    {% if assistants is empty %}
+        <twig:Ui:Card>
+            <div class="text-center py-5">
+                <div class="mb-3 text-secondary">{{ ux_icon('tabler:robot', {width: 48, height: 48}) }}</div>
+                <h2 class="h3">{{ 'assistant.empty.title'|trans }}</h2>
+                <p class="text-secondary mx-auto assistant-empty-text">{{ 'assistant.empty.description'|trans }}</p>
+                <a class="btn btn-primary" href="{{ path('_assistants_add') }}">
+                    {{ ux_icon('tabler:plus', {width: 18, height: 18}) }} {{ 'assistant.add'|trans }}
+                </a>
+            </div>
+        </twig:Ui:Card>
+    {% else %}
+        <div class="assistant-columns">
+            {% for assistant in assistants %}
+                <twig:Ui:Card title="{{ assistant.name }}" subtitle="{{ assistant.channel.label|trans }}">
+                    {% if assistant.description %}<p>{{ assistant.description }}</p>{% endif %}
+                    <a class="btn btn-outline-primary" href="{{ path('_assistants_overview', {id: assistant.id}) }}">{{ 'assistant.open'|trans }}</a>
+                </twig:Ui:Card>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}

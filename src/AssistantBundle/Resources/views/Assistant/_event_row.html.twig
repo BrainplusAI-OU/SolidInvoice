@@ -1,0 +1,28 @@
+{#
+ # This file is part of SolidInvoice package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{# One line of a short journal list (overview). Expects `event`. #}
+<li class="assistant-feed-item">
+    <span class="assistant-feed-icon assistant-feed-icon--{{ event.status.variant }}">
+        {{ ux_icon('tabler:' ~ event.type.icon, {width: 16, height: 16}) }}
+    </span>
+    <div class="assistant-feed-body">
+        <div class="assistant-feed-subject">
+            {% if event.direction %}<span class="text-secondary">{{ event.direction.value == 'in' ? '→' : '←' }}</span>{% endif %}
+            {{ event.subject }}
+        </div>
+        <div class="assistant-feed-meta">
+            {{ event.occurredAt|date('d M Y H:i') }}
+            {% if event.who %} · {{ event.who }}{% endif %}
+            · {{ event.type.label|trans }}
+            {% if event.expense %} · <a href="{{ path('_expenses_edit', {id: event.expense.id}) }}">{{ 'assistant.event.view_expense'|trans }}</a>{% endif %}
+        </div>
+    </div>
+    {% include '@SolidInvoiceAssistant/Assistant/_status.html.twig' with {status: event.status} only %}
+</li>

@@ -1,0 +1,34 @@
+{#
+ # This file is part of SolidInvoice package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{% extends "@SolidInvoiceAssistant/Assistant/_layout.html.twig" %}
+
+{% block assistant_content %}
+    <twig:Ui:Card title="{{ (form.vars.data.id is empty ? 'assistant.member.add' : 'assistant.member.edit')|trans }}" subtitle="{{ 'assistant.member.subtitle'|trans({'%name%': assistant.name}) }}">
+        {{ form_start(form) }}
+        {{ form_errors(form) }}
+        <div class="form-grid">
+            <div class="form-field">{{ form_row(form.name) }}</div>
+            <div class="form-field">{{ form_row(form.externalId) }}</div>
+            <div class="form-field">{{ form_row(form.payer) }}</div>
+            <div class="form-field">{{ form_row(form.language) }}</div>
+            <div class="form-field form-field-wide">{{ form_row(form.vehiclePlates) }}</div>
+            <div class="form-field form-field-wide">{{ form_row(form.active) }}</div>
+            <div class="form-field form-field-wide">{{ form_row(form.note) }}</div>
+        </div>
+        {{ form_rest(form) }}
+        <div class="form-actions mt-3">
+            <a href="{{ path('_assistants_members', {id: assistant.id}) }}" class="btn btn-ghost">{{ 'action.cancel'|trans }}</a>
+            <button type="submit" class="btn btn-primary">
+                {{ ux_icon('tabler:device-floppy', {width: 18, height: 18}) }} {{ 'action.save'|trans }}
+            </button>
+        </div>
+        {{ form_end(form) }}
+    </twig:Ui:Card>
+{% endblock %}

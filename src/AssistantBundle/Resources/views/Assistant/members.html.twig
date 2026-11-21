@@ -1,0 +1,24 @@
+{#
+ # This file is part of SolidInvoice package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{% extends "@SolidInvoiceAssistant/Assistant/_layout.html.twig" %}
+
+{% block heading %}
+    <a class="btn btn-primary" href="{{ path('_assistants_members_add', {id: assistant.id}) }}">
+        {{ ux_icon('tabler:plus', {width: 18, height: 18}) }}
+        {{ 'assistant.member.add'|trans }}
+    </a>
+{% endblock %}
+
+{% block assistant_content %}
+    <p class="text-secondary mb-3">{{ 'assistant.members.intro'|trans({'%name%': assistant.name}) }}</p>
+    <twig:Ui:Card>
+        <twig:DataGrid name="assistant_member_grid" :context="{ assistant_id: (assistant.id ~ '') }" />
+    </twig:Ui:Card>
+{% endblock %}

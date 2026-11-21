@@ -1,0 +1,74 @@
+{#
+ # This file is part of SolidInvoice package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{% extends "@SolidInvoiceAssistant/Assistant/_layout.html.twig" %}
+
+{% block assistant_content %}
+    <div class="assistant-columns">
+        <twig:Ui:Card title="{{ 'assistant.settings.details'|trans }}">
+            {{ form_start(form) }}
+            {{ form_errors(form) }}
+            {% include '@SolidInvoiceAssistant/Assistant/_assistant_fields.html.twig' %}
+            {{ form_rest(form) }}
+            <div class="form-actions mt-3">
+                <button type="submit" class="btn btn-primary">
+                    {{ ux_icon('tabler:device-floppy', {width: 18, height: 18}) }} {{ 'action.save'|trans }}
+                </button>
+            </div>
+            {{ form_end(form) }}
+        </twig:Ui:Card>
+
+        <twig:Ui:Card title="{{ 'assistant.settings.connect'|trans }}" subtitle="{{ 'assistant.settings.connect_help'|trans }}">
+            <dl class="assistant-event-facts">
+                <dt>{{ 'assistant.settings.assistant_id'|trans }}</dt>
+                <dd><code>{{ assistant.id }}</code></dd>
+                <dt>{{ 'assistant.settings.token'|trans }}</dt>
+                <dd>
+                    {{ 'assistant.settings.token_help'|trans }}
+                    <a href="{{ path('_api_keys_index') }}">{{ 'assistant.settings.token_link'|trans }}</a>
+                </dd>
+            </dl>
+            <table class="table table-sm assistant-endpoints">
+                <tbody>
+                    <tr>
+                        <td><code>POST</code></td>
+                        <td><code>{{ url('_api_assistants_events', {id: assistant.id}) }}</code></td>
+                        <td>{{ 'assistant.settings.endpoint.events'|trans }}</td>
+                    </tr>
+                    <tr>
+                        <td><code>GET</code></td>
+                        <td><code>{{ url('_api_assistants_members_config', {id: assistant.id}) }}</code></td>
+                        <td>{{ 'assistant.settings.endpoint.config'|trans }}</td>
+                    </tr>
+                    <tr>
+                        <td><code>PATCH</code></td>
+                        <td><code>{{ url('_api_assistants_members', {id: assistant.id}) }}/&lt;id&gt;</code></td>
+                        <td>{{ 'assistant.settings.endpoint.member'|trans }}</td>
+                    </tr>
+                    <tr>
+                        <td><code>PUT</code></td>
+                        <td><code>{{ url('_api_assistants_members', {id: assistant.id}) }}</code></td>
+                        <td>{{ 'assistant.settings.endpoint.import'|trans }}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <p class="text-secondary mb-1">{{ 'assistant.settings.example'|trans }}</p>
+            <pre class="assistant-code">{{ {
+                key: 'telegram:recap:123:456',
+                type: 'document',
+                status: 'processed',
+                subject: 'Makro · 1,250.00 THB',
+                member: {externalId: '123456789', name: 'Rose'},
+                expenseId: '01J…',
+                links: [{label: 'Drive', url: 'https://drive.google.com/…'}],
+                details: {amount: '1250.00', currency: 'THB'}
+            }|json_encode(constant('JSON_PRETTY_PRINT') b-or constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_UNESCAPED_SLASHES')) }}</pre>
+        </twig:Ui:Card>
+    </div>
+{% endblock %}

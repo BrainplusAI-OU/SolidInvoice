@@ -41,6 +41,132 @@ affiliate:
         title: 'Earn up to %earnings% a year for every customer you refer'
     prompt:
         not_now: 'Not now'
+assistant:
+    activity:
+        intro: 'Everything %name% reported: documents, messages, e-mails, refused access and errors. Open a line for its details.'
+    add: 'Add Assistant'
+    conversations:
+        intro: 'Messages between %name% and the members. → came from a member, ← is what %name% answered.'
+    emails:
+        intro: 'E-mails that reached %name%''s mailbox, and what became of them.'
+    empty:
+        description: 'An assistant is a bot that works for the company: it reads receipts sent on Telegram or LINE, or the e-mails of an accounting mailbox, and records the expenses. Add it here to follow what it does and choose who may use it.'
+        title: 'No assistant yet'
+    event:
+        channel:
+            email: E-mail
+            line: LINE
+            system: System
+            telegram: Telegram
+            whatsapp: WhatsApp
+        direction:
+            in: Received
+            out: Sent
+        grid:
+            channel: Channel
+            empty_description: 'Nothing reported yet. Once the bot is connected, each document, message and e-mail it handles appears here.'
+            empty_title: 'No activity'
+            expense: Expense
+            subject: Subject
+            type: Type
+            when: When
+            who: Who
+        key: Key
+        not_a_member: 'not a member'
+        status:
+            failed: Failed
+            info: Info
+            pending: Pending
+            processed: Processed
+            rejected: Rejected
+        type:
+            access: 'Refused access'
+            announcement: Announcement
+            document: Document
+            email: E-mail
+            error: Error
+            message: Message
+        view_expense: 'View expense'
+    flash:
+        saved: 'Assistant saved.'
+    form:
+        channel: Channel
+        description: Description
+        inbox_email: 'Mailbox it reads'
+        inbox_email_help: 'Optional, such as accounting@yourcompany.com.'
+        name: Name
+        name_help: 'Shown in the menu, such as « Jeannine ».'
+    member:
+        add: 'Add Member'
+        edit: 'Edit Member'
+        flash:
+            saved: 'Member saved.'
+        form:
+            active: 'May use the assistant'
+            active_help: 'Untick to shut someone out without losing their history.'
+            external_id: 'Channel id'
+            external_id_help: 'The person''s numeric id on the channel (on Telegram, the id the bot sees, not the @username).'
+            external_id_taken: 'This id is already a member.'
+            language: Language
+            language_help: 'Two letters (fr, en, th). Left empty, the bot asks.'
+            name: Name
+            note: Note
+            payer: 'Booked to'
+            payer_help: 'Who the expenses this person records are booked to, if not themselves.'
+            vehicle_plates: 'Vehicle plates'
+            vehicle_plates_help: 'To tell fuel receipts apart. Separate several with commas.'
+        grid:
+            activate: Allow
+            deactivate: 'Shut out'
+            delete_confirm: 'Delete the selected members? They can no longer use the assistant; their past activity stays in the journal.'
+            empty_description: 'Only the people listed here can use the assistant. Anyone else is refused, and the attempt shows in the activity.'
+            empty_title: 'No member yet'
+            last_seen: 'Last seen'
+        subtitle: 'Someone allowed to use %name%.'
+    members:
+        intro: 'The people allowed to use %name%. The bot reads this list on every message: a change applies at once.'
+    menu:
+        main: Assistants
+    open: Open
+    overview:
+        attention: 'Needs attention'
+        attention_none: 'Nothing waiting. Documents not yet validated and errors appear here.'
+        denied: '{0} No refused access|{1} 1 refused access|]1,Inf[ %count% refused accesses'
+        emails: '{0} No e-mail|{1} 1 e-mail|]1,Inf[ %count% e-mails'
+        failed: 'Documents failed'
+        last_activity: 'last activity %date%'
+        latest: 'Latest activity'
+        members: '{0} No active member|{1} 1 active member|]1,Inf[ %count% active members'
+        messages: '{0} No message|{1} 1 message|]1,Inf[ %count% messages'
+        not_connected: 'This assistant has not reported anything yet. Its connection details are in'
+        not_connected_title: 'Not connected yet'
+        pending: 'Documents waiting'
+        period: 'Last %days% days'
+        processed: 'Documents recorded'
+        rejected: 'Documents cancelled'
+        see_all: 'See all activity'
+    settings:
+        assistant_id: 'Assistant id'
+        connect: 'Connect the bot'
+        connect_help: 'The bot calls these addresses with an API token in the X-API-TOKEN header.'
+        details: Details
+        endpoint:
+            config: 'Active members, in the columns of a Google Sheets range: id, name, plates, language, payer.'
+            events: 'Report what happened. The same key updates the same line.'
+            import: 'Bring in a whole list of members.'
+            member: 'Change one member (language, plates).'
+        example: 'A report, for example:'
+        token: 'API token'
+        token_help: 'Create one for the bot in your profile, and keep it in the bot''s credentials, never in a message.'
+        token_link: 'API tokens'
+    subtitle: 'A bot working for the company, and the people allowed to use it.'
+    tab:
+        activity: Activity
+        conversations: Conversations
+        emails: E-mails
+        members: Members
+        overview: Overview
+        settings: Settings
 billing:
     discount: Discount
     due_date: 'Due Date'
@@ -2594,13 +2720,16 @@ status:
     expired: Expired
     failed: Failed
     inactive: Inactive
+    info: Info
     issued: Issued
     new: New
     overdue: Overdue
     paid: Paid
     paused: Paused
     pending: Pending
+    processed: Processed
     refunded: Refunded
+    rejected: Rejected
     suspended: Suspended
     unknown: Unknown
 tax:

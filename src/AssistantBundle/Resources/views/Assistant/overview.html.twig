@@ -1,0 +1,99 @@
+{#
+ # This file is part of SolidInvoice package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{% extends "@SolidInvoiceAssistant/Assistant/_layout.html.twig" %}
+
+{% block assistant_content %}
+    {% if nothing and latest is empty %}
+        <twig:Ui:Alert type="info" icon="tabler:plug-connected" title="{{ 'assistant.overview.not_connected_title'|trans }}">
+            {{ 'assistant.overview.not_connected'|trans }}
+            <a href="{{ path('_assistants_settings', {id: assistant.id}) }}">{{ 'assistant.tab.settings'|trans }}</a>
+        </twig:Ui:Alert>
+    {% endif %}
+
+    <p class="text-secondary mb-3">
+        {{ 'assistant.overview.period'|trans({'%days%': days}) }}
+        {% if lastActivity %} · {{ 'assistant.overview.last_activity'|trans({'%date%': lastActivity|date('d M Y H:i')}) }}{% endif %}
+    </p>
+
+    <div class="assistant-stats">
+        <div class="stat-card">
+            <div class="stat-card-content">
+                <div class="stat-icon stat-icon--success">{{ ux_icon('tabler:circle-check', {width: 24, height: 24}) }}</div>
+                <div class="stat-info">
+                    <span class="stat-label">{{ 'assistant.overview.processed'|trans }}</span>
+                    <span class="stat-value">{{ documents.processed }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-content">
+                <div class="stat-icon stat-icon--warning">{{ ux_icon('tabler:hourglass', {width: 24, height: 24}) }}</div>
+                <div class="stat-info">
+                    <span class="stat-label">{{ 'assistant.overview.pending'|trans }}</span>
+                    <span class="stat-value">{{ documents.pending }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-card-content">
+                <div class="stat-icon stat-icon--primary">{{ ux_icon('tabler:circle-x', {width: 24, height: 24}) }}</div>
+                <div class="stat-info">
+                    <span class="stat-label">{{ 'assistant.overview.rejected'|trans }}</span>
+                    <span class="stat-value">{{ documents.rejected }}</span>
+                </div>
+            </div>
+        </div>
+        <div class="stat-card{% if documents.failed > 0 %} stat-card--danger{% endif %}">
+            <div class="stat-card-content">
+                <div class="stat-icon stat-icon--danger">{{ ux_icon('tabler:alert-triangle', {width: 24, height: 24}) }}</div>
+                <div class="stat-info">
+                    <span class="stat-label">{{ 'assistant.overview.failed'|trans }}</span>
+                    <span class="stat-value">{{ documents.failed }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="assistant-counters">
+        <a href="{{ path('_assistants_conversations', {id: assistant.id}) }}">{{ ux_icon('tabler:messages', {width: 16, height: 16}) }} {{ 'assistant.overview.messages'|trans({'%count%': messages}) }}</a>
+        <a href="{{ path('_assistants_emails', {id: assistant.id}) }}">{{ ux_icon('tabler:mail', {width: 16, height: 16}) }} {{ 'assistant.overview.emails'|trans({'%count%': emails}) }}</a>
+        <a href="{{ path('_assistants_members', {id: assistant.id}) }}">{{ ux_icon('tabler:users', {width: 16, height: 16}) }} {{ 'assistant.overview.members'|trans({'%count%': members}) }}</a>
+        <span{% if denied > 0 %} class="text-danger"{% endif %}>{{ ux_icon('tabler:lock', {width: 16, height: 16}) }} {{ 'assistant.overview.denied'|trans({'%count%': denied}) }}</span>
+    </div>
+
+    <div class="assistant-columns">
+        <twig:Ui:Card title="{{ 'assistant.overview.attention'|trans }}">
+            {% if attention is empty %}
+                <p class="text-secondary mb-0">{{ 'assistant.overview.attention_none'|trans }}</p>
+            {% else %}
+                <ul class="assistant-feed">
+                    {% for event in attention %}
+                        {% include '@SolidInvoiceAssistant/Assistant/_event_row.html.twig' %}
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </twig:Ui:Card>
+
+        <twig:Ui:Card title="{{ 'assistant.overview.latest'|trans }}">
+            {% if latest is empty %}
+                <p class="text-secondary mb-0">{{ 'assistant.event.grid.empty_description'|trans }}</p>
+            {% else %}
+                <ul class="assistant-feed">
+                    {% for event in latest %}
+                        {% include '@SolidInvoiceAssistant/Assistant/_event_row.html.twig' %}
+                    {% endfor %}
+                </ul>
+                <a href="{{ path('_assistants_activity', {id: assistant.id}) }}" class="btn btn-ghost btn-sm mt-2">
+                    {{ 'assistant.overview.see_all'|trans }}
+                </a>
+            {% endif %}
+        </twig:Ui:Card>
+    </div>
+{% endblock %}

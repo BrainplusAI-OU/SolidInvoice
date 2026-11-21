@@ -43,6 +43,12 @@ return static function (RoutingConfigurator $routingConfigurator): void {
     $routingConfigurator->import('@SolidInvoiceCatalogBundle/Resources/config/routing.php')
         ->prefix('/items');
 
+    $routingConfigurator->import('@SolidInvoiceAssistantBundle/Resources/config/routing.php')
+        ->prefix('/assistants');
+
+    $routingConfigurator->import('@SolidInvoiceAssistantBundle/Resources/config/routing_api.php')
+        ->prefix('/api/assistants', false);
+
     $routingConfigurator->import('@SolidInvoiceTaxBundle/Resources/config/routing.php')
         ->prefix('/tax');
 

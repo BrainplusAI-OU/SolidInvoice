@@ -1,0 +1,48 @@
+{#
+ # This file is part of SolidInvoice package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{#
+ # The frame of every page of an assistant: its name in the page header, then one row of
+ # tabs. A page sets `tab` and fills `assistant_content`.
+ #}
+{% extends "@SolidInvoiceCore/Layout/default.html.twig" %}
+
+{% block page_pretitle %}
+    <a href="{{ path('_assistants_overview', {id: assistant.id}) }}" class="text-reset">
+        {{ ux_icon('tabler:robot', {width: 16, height: 16, class: 'me-1'}) }}{{ assistant.name }}
+    </a>
+{% endblock %}
+
+{% block title %}
+    {{ ('assistant.tab.' ~ tab)|trans }}
+{% endblock title %}
+
+{% block content %}
+    {% set tabs = [
+        {key: 'overview', route: '_assistants_overview', icon: 'chart-bar'},
+        {key: 'activity', route: '_assistants_activity', icon: 'activity'},
+        {key: 'conversations', route: '_assistants_conversations', icon: 'messages'},
+        {key: 'emails', route: '_assistants_emails', icon: 'mail'},
+        {key: 'members', route: '_assistants_members', icon: 'users'},
+        {key: 'settings', route: '_assistants_settings', icon: 'settings'},
+    ] %}
+
+    <nav class="assistant-tabs" aria-label="{{ assistant.name }}">
+        {% for item in tabs %}
+            <a href="{{ path(item.route, {id: assistant.id}) }}"
+               class="assistant-tab{{ tab == item.key ? ' is-current' }}"
+               {% if tab == item.key %}aria-current="page"{% endif %}>
+                {{ ux_icon('tabler:' ~ item.icon, {width: 16, height: 16}) }}
+                <span>{{ ('assistant.tab.' ~ item.key)|trans }}</span>
+            </a>
+        {% endfor %}
+    </nav>
+
+    {% block assistant_content %}{% endblock %}
+{% endblock %}

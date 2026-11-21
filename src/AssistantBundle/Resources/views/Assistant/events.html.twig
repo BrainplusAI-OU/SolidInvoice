@@ -1,0 +1,17 @@
+{#
+ # This file is part of SolidInvoice package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{% extends "@SolidInvoiceAssistant/Assistant/_layout.html.twig" %}
+
+{% block assistant_content %}
+    <p class="text-secondary mb-3">{{ ('assistant.' ~ view ~ '.intro')|trans({'%name%': assistant.name}) }}</p>
+    <twig:Ui:Card>
+        <twig:DataGrid name="assistant_event_grid" :context="{ assistant_id: (assistant.id ~ ''), view: view }" />
+    </twig:Ui:Card>
+{% endblock %}

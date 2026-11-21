@@ -1,0 +1,11 @@
+{#
+ # This file is part of SolidInvoice package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{# A status badge, the same as the journal grid's. Expects `status` (EventStatus). #}
+<span class="datagrid-status status-{{ status.variant }}">{{ status.label|trans }}</span>
