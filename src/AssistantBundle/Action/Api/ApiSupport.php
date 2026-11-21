@@ -17,6 +17,7 @@ use JsonException;
 use SolidInvoice\AssistantBundle\Entity\Assistant;
 use SolidInvoice\AssistantBundle\Entity\AssistantMember;
 use SolidInvoice\AssistantBundle\Repository\AssistantRepository;
+use SolidInvoice\CoreBundle\Company\CompanySelector;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -34,17 +35,21 @@ final readonly class ApiSupport
 {
     public function __construct(
         private AssistantRepository $assistants,
+        private CompanySelector $companySelector,
     ) {
     }
 
     /**
-     * The company filter is on for an API token, so another company's assistant is a 404.
+     * Another company's assistant is a 404. The company filter covers queries, but find() can
+     * return an entity already loaded in this entity manager without one, so the company is
+     * checked here too.
      */
     public function assistant(string $id): Assistant
     {
         $assistant = Ulid::isValid($id) ? $this->assistants->find(Ulid::fromString($id)) : null;
+        $company = $this->companySelector->getCompany();
 
-        if (! $assistant instanceof Assistant) {
+        if (! $assistant instanceof Assistant || ! $company instanceof Ulid || ! $company->equals($assistant->getCompany()->getId())) {
             throw new NotFoundHttpException('Assistant not found.');
         }
 
