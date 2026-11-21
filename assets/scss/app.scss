@@ -122,6 +122,9 @@ $alert-secondary-text: $orange-dark;
 // Notification marketplace page styles
 @import './notification-marketplace';
 
+// Assistant pages (bots working for the company)
+@import './assistant';
+
 // ============================================================================
 // 8. LEGACY BOOTSTRAP OVERRIDES (To be cleaned up)
 // ============================================================================

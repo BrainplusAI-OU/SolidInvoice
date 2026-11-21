@@ -1,0 +1,196 @@
+/**
+ * Assistant pages (bots working for the company): tabs, stat tiles, journal lists.
+ *
+ * Reuses the dashboard's .stat-card / .stat-icon / .stat-value, laid out in an even
+ * row of four instead of the dashboard's asymmetric tracks.
+ */
+
+.assistant-tabs {
+    display: flex;
+    gap: var(--tblr-space-1);
+    margin-bottom: var(--tblr-space-4);
+    border-bottom: 1px solid var(--tblr-border-light);
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.assistant-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--tblr-space-2);
+    padding: var(--tblr-space-2) var(--tblr-space-3);
+    margin-bottom: -1px;
+    border-bottom: 2px solid transparent;
+    color: var(--tblr-text-muted);
+    font-weight: var(--tblr-font-medium);
+    white-space: nowrap;
+    text-decoration: none;
+
+    &:hover {
+        color: var(--tblr-text-primary);
+        text-decoration: none;
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--tblr-primary);
+        outline-offset: -2px;
+    }
+
+    &.is-current {
+        color: var(--tblr-text-primary);
+        border-bottom-color: var(--tblr-primary);
+    }
+}
+
+.assistant-stats {
+    display: grid;
+    gap: var(--tblr-space-4);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin-bottom: var(--tblr-space-4);
+
+    @media (width >= 992px) {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .stat-card {
+        grid-column: auto;
+        padding: var(--tblr-space-4);
+    }
+}
+
+.assistant-counters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--tblr-space-2) var(--tblr-space-5);
+    margin-bottom: var(--tblr-space-4);
+
+    > a,
+    > span {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--tblr-space-1);
+    }
+}
+
+.assistant-columns {
+    display: grid;
+    gap: var(--tblr-space-4);
+    grid-template-columns: minmax(0, 1fr);
+
+    @media (width >= 992px) {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.assistant-feed {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.assistant-feed-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--tblr-space-3);
+    padding: var(--tblr-space-2) 0;
+    border-bottom: 1px solid var(--tblr-border-light);
+
+    &:last-child {
+        border-bottom: 0;
+    }
+}
+
+.assistant-feed-icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--tblr-radius-md);
+    background: var(--tblr-surface-secondary, #f1f1f1);
+    color: var(--tblr-text-muted);
+
+    &--success {
+        color: var(--tblr-success);
+    }
+
+    &--warning {
+        color: var(--tblr-warning);
+    }
+
+    &--danger {
+        color: var(--tblr-danger);
+    }
+
+    &--info {
+        color: var(--tblr-info);
+    }
+}
+
+.assistant-feed-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.assistant-feed-subject {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.assistant-feed-meta {
+    color: var(--tblr-text-muted);
+    font-size: var(--tblr-text-xs);
+}
+
+.assistant-event-detail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--tblr-space-3);
+}
+
+.assistant-event-facts {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: var(--tblr-space-1) var(--tblr-space-4);
+    margin: 0;
+
+    dt {
+        color: var(--tblr-text-muted);
+        font-weight: var(--tblr-font-medium);
+    }
+
+    dd {
+        margin: 0;
+        overflow-wrap: anywhere;
+    }
+}
+
+.assistant-event-body {
+    white-space: normal;
+    padding: var(--tblr-space-3);
+    border-radius: var(--tblr-radius-md);
+    background: var(--tblr-surface-secondary, #fcfcfc);
+    overflow-wrap: anywhere;
+}
+
+.assistant-event-links,
+.assistant-event-history {
+    margin: 0;
+    padding-left: var(--tblr-space-4);
+}
+
+.assistant-code {
+    max-height: 18rem;
+    overflow: auto;
+    font-size: var(--tblr-text-xs);
+}
+
+.assistant-endpoints code {
+    overflow-wrap: anywhere;
+}
+
+.assistant-empty-text {
+    max-width: 36rem;
+}

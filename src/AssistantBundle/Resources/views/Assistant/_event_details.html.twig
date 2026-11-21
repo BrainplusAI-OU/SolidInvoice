@@ -1,0 +1,70 @@
+{#
+ # This file is part of SolidInvoice package.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{#
+ # Row detail of the journal grid: everything the bot sent. Included by the grid with
+ # `row`, the event. Text is escaped by Twig; links are http(s) only (AssistantEvent::getLinks).
+ #}
+<div class="assistant-event-detail">
+    <dl class="assistant-event-facts">
+        <dt>{{ 'assistant.event.grid.when'|trans }}</dt>
+        <dd>{{ row.occurredAt|date('d M Y H:i:s') }}</dd>
+        <dt>{{ 'assistant.event.grid.channel'|trans }}</dt>
+        <dd>{{ row.channel.label|trans }}{% if row.direction %} · {{ row.direction.label|trans }}{% endif %}</dd>
+        {% if row.who or row.memberExternalId %}
+            <dt>{{ 'assistant.event.grid.who'|trans }}</dt>
+            <dd>
+                {{ row.who ?? '-' }}
+                {% if row.memberExternalId %}<span class="text-secondary">({{ row.memberExternalId }})</span>{% endif %}
+                {% if row.member is null and row.memberExternalId %}<span class="text-secondary">· {{ 'assistant.event.not_a_member'|trans }}</span>{% endif %}
+            </dd>
+        {% endif %}
+        {% if row.expense %}
+            <dt>{{ 'assistant.event.grid.expense'|trans }}</dt>
+            <dd><a href="{{ path('_expenses_edit', {id: row.expense.id}) }}">{{ 'assistant.event.view_expense'|trans }}</a></dd>
+        {% endif %}
+        {% if row.eventKey %}
+            <dt>{{ 'assistant.event.key'|trans }}</dt>
+            <dd><code>{{ row.eventKey }}</code></dd>
+        {% endif %}
+    </dl>
+
+    {% if row.body %}
+        <div class="assistant-event-body">{{ row.body|nl2br }}</div>
+    {% endif %}
+
+    {% if row.links is not empty %}
+        <ul class="assistant-event-links">
+            {% for link in row.links %}
+                <li>
+                    <a href="{{ link.url }}" target="_blank" rel="noopener noreferrer">
+                        {{ ux_icon('tabler:external-link', {width: 14, height: 14}) }} {{ link.label }}
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    {% if row.extraDetails is not empty %}
+        <dl class="assistant-event-facts">
+            {% for name, value in row.extraDetails %}
+                <dt>{{ name }}</dt>
+                <dd>{{ value is iterable ? value|json_encode(constant('JSON_UNESCAPED_UNICODE') b-or constant('JSON_UNESCAPED_SLASHES')) : value }}</dd>
+            {% endfor %}
+        </dl>
+    {% endif %}
+
+    {% if row.history|length > 1 %}
+        <ol class="assistant-event-history">
+            {% for step in row.history %}
+                <li>{{ step.at|date('d M H:i') }} · {{ ('assistant.event.status.' ~ step.status)|trans }}</li>
+            {% endfor %}
+        </ol>
+    {% endif %}
+</div>
