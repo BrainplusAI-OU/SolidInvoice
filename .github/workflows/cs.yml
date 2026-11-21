@@ -95,8 +95,11 @@ jobs:
       - name: Install dependencies
         run: composer install --no-scripts
 
+      # roave/security-advisories refuses the runner's PHP patch release as soon as an advisory
+      # lands for it, before setup-php ships the fixed one. This job only checks composer.json and
+      # composer.lock, so the runner's PHP version is irrelevant here.
       - name: Ensure lock file is up to date
-        run: composer update --lock --no-scripts
+        run: composer update --lock --no-scripts --ignore-platform-req=php
 
       - name: Run composer normalize
         run: composer normalize --no-update-lock --diff --dry-run

@@ -1,0 +1,98 @@
+{#
+ # This file is part of SolidInvoice project.
+ #
+ # (c) Pierre du Plessis <open-source@solidworx.co>
+ #
+ # This source file is subject to the MIT license that is bundled
+ # with this source code in the file LICENSE.
+ #}
+
+{#
+ # Sidebar laid out like Twenty's navigation drawer. Applies only when the layout passes `ws_part`.
+ #
+ # ws_part: 'main' (Home mode). The "System" section is left out: it lives in Settings mode. A section
+ # (Clients, Invoices...) is one row instead of a dropdown whose children are "List" and "Add":
+ #   - the row links to the section's first child (the list);
+ #   - an "add"/"create" child becomes a "+" button at the end of the row;
+ #   - any other child (vendors, categories, payment methods...) is listed under the row, indented,
+ #     only while the section holds the current page.
+ #
+ # ws_part: 'settings' (Settings mode). Only the children of "System" are rendered, as flat rows,
+ # the company's general settings first, like Twenty's Workspace > General.
+ #
+ # Leaf items and every other menu keep the platform rendering.
+ #}
+{% extends '@!SolidWorxPlatform/Menu/menu.html.twig' %}
+{% import 'knp_menu.html.twig' as ui %}
+
+{% block item %}
+    {%- set ws_part = options.ws_part|default(null) -%}
+    {% if ws_part and item.parent.isRoot and item.name == 'menu.top.system' %}
+        {% if ws_part == 'settings' and item.displayed %}
+            {%- set ws_order = {'_settings': 0, '_users_list': 1} -%}
+            {%- set ws_rows = item.children|filter(c => c.displayed)|sort((a, b) => (ws_order[a.extras.routes[0].route|default('')] ?? 9) <=> (ws_order[b.extras.routes[0].route|default('')] ?? 9)) -%}
+            {% for child in ws_rows %}
+                {%- set ws_route = child.extras.routes[0].route|default('') -%}
+                {%- set ws_current = matcher.isCurrent(child) or matcher.isAncestor(child, options.matchingDepth) -%}
+                <li class="nav-item{{ ws_current ? ' active' }}">
+                    <a href="{{ child.uri }}" class="nav-link"{% if ws_current %} aria-current="page"{% endif %}>
+                        {% if child.extras.icon is defined %}
+                            <span class="nav-link-icon">{{ ux_icon('tabler:' ~ child.extras.icon) }}</span>
+                        {% endif %}
+                        <span class="nav-link-title">{{ (ws_route == '_settings' ? 'layout.nav.general' : child.label)|trans }}</span>
+                    </a>
+                </li>
+            {% endfor %}
+        {% endif %}
+    {% elseif ws_part == 'settings' and item.parent.isRoot %}
+        {# Only the System section belongs to Settings mode. #}
+    {% elseif ws_part == 'main' and item.displayed and item.parent.isRoot and item.hasChildren and item.displayChildren %}
+        {%- set visible = item.children|filter(c => c.displayed) -%}
+        {%- set linked = visible|filter(c => c.uri is not empty) -%}
+        {#- The System section's natural landing page is Settings, not its first entry. -#}
+        {%- set primary = linked|filter(c => c.extras.routes[0].route|default('') == '_settings')|first ?: linked|first -%}
+        {%- set add = null -%}
+        {%- set others = [] -%}
+        {%- for child in visible -%}
+            {%- set route = child.extras.routes[0].route|default('') -%}
+            {%- if child is not same as(primary) -%}
+                {%- if add is null and (route ends with '_add' or route ends with '_create' or '_create_' in route) -%}
+                    {%- set add = child -%}
+                {%- else -%}
+                    {%- set others = others|merge([child]) -%}
+                {%- endif -%}
+            {%- endif -%}
+        {%- endfor -%}
+        {%- set open = matcher.isCurrent(item) or matcher.isAncestor(item, options.matchingDepth) -%}
+        {%- set primaryCurrent = primary ? matcher.isCurrent(primary) : false -%}
+
+        <li class="nav-item ws-section{{ open ? ' active' }}">
+            <div class="ws-row{{ primaryCurrent or (open and others is empty) ? ' is-current' }}">
+                <a href="{{ primary ? primary.uri : '#' }}" class="nav-link"{% if primaryCurrent %} aria-current="page"{% endif %}>
+                    {% if item.extras.icon is defined %}
+                        <span class="nav-link-icon">{{ ux_icon('tabler:' ~ item.extras.icon) }}</span>
+                    {% endif %}
+                    <span class="nav-link-title">{{ item.label|trans }}</span>
+                </a>
+                {% if add %}
+                    <a href="{{ add.uri }}" class="ws-row-action" title="{{ add.label|trans }}" aria-label="{{ add.label|trans }}">
+                        {{ ux_icon('tabler:plus') }}
+                    </a>
+                {% endif %}
+            </div>
+            {% if others is not empty and open %}
+                <ul class="ws-sublist">
+                    {% for child in others %}
+                        <li>
+                            <a href="{{ child.uri }}" class="ws-subitem{{ matcher.isCurrent(child) or matcher.isAncestor(child, options.matchingDepth) ? ' is-current' }}">
+                                {{ child.label|trans }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </li>
+    {% else %}
+        {{ parent() }}
+    {% endif %}
+{% endblock %}
